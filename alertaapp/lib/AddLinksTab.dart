@@ -18,17 +18,23 @@ class _AddLinksTabState extends State<AddLinksTab> {
     if (userId == null) return;
 
     try {
-      // 1. Получаем текущий массив из базы данных
-      final profile = await supabase.from('profiles').select(column).eq('id', userId).single();
-      List<dynamic> currentList = profile[column] ?? [];
+      // 1. Меняем .single() на .maybeSingle()
+      final profile = await supabase.from('profiles').select(column).eq('id', userId).maybeSingle();
+
+      // Если профиля ещё нет, создаем пустой список
+      List<dynamic> currentList = [];
+      if (profile != null) {
+        currentList = profile[column] ?? [];
+      }
 
       // 2. Добавляем в него новое значение
       currentList.add(value);
 
-      // 3. Сохраняем обновленный массив обратно в Supabase
-      await supabase.from('profiles').update({
+      // 3. Используем upsert вместо update, чтобы строка создалась автоматически
+      await supabase.from('profiles').upsert({
+        'id': userId,
         column: currentList,
-      }).eq('id', userId);
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Успешно сохранено!')));
