@@ -1,0 +1,120 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Инциденты - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <div class="a-card__header mb-0">
+        <div>
+            <h1 class="a-page-header__title">
+                <i class="fa-regular fa-triangle-exclamation text-green"></i> Журнал инцидентов
+                {% if incidents_count %}
+                <span class="a-badge a-badge--count">{{ incidents_count }}</span>
+                {% endif %}
+            </h1>
+            <p class="a-page-header__desc">История сбоев и восстановлений всех мониторов</p>
+        </div>
+        {% if incidents %}
+        <span class="a-meta">
+            <i class="fa-regular fa-clock"></i> Всего: {{ incidents_count }}
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="a-card">
+    {% if not incidents %}
+    <div class="a-empty">
+        <div class="a-empty__icon"><i class="fa-regular fa-circle-check text-green"></i></div>
+        <p class="a-empty__title">Отличные новости!</p>
+        <p class="a-empty__desc">Инциденты не зарегистрированы. Все системы работают стабильно.</p>
+    </div>
+    {% else %}
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Монитор</th>
+                    <th>Начало сбоя</th>
+                    <th>Восстановление</th>
+                    <th>Длительность</th>
+                    <th>Причина</th>
+                    <th>Статус</th>
+                    <th class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in incidents %}
+                <tr>
+                    <td><strong class="text-green">{{ incident.monitor.name }}</strong></td>
+                    <td class="a-meta">{{ incident.started_at|date:"Y-m-d H:i:s" }}</td>
+                    <td class="a-meta">
+                        {% if incident.resolved_at %}
+                        {{ incident.resolved_at|date:"Y-m-d H:i:s" }}
+                        {% else %}
+                        <span class="text-danger fw-semibold">
+                            <i class="fa-regular fa-circle-exclamation"></i> Активен
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="a-meta">
+                        {% if incident.duration %}
+                        {{ incident.duration }} сек.
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td class="a-meta">{{ incident.reason }}</td>
+                    <td>
+                        {% if incident.resolved_at %}
+                        <span class="a-badge a-badge--success">
+                            <i class="fa-regular fa-circle-check"></i> Разрешен
+                        </span>
+                        {% elif incident.is_acknowledged %}
+                        <span class="a-badge a-badge--warn">
+                            <i class="fa-regular fa-handshake"></i> Подтвержден
+                        </span>
+                        {% else %}
+                        <span class="a-badge a-badge--danger">
+                            <i class="fa-regular fa-circle-exclamation"></i> Критический
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="a-actions flex-column">
+                            {% if not incident.resolved_at %}
+                            {% if not incident.is_acknowledged %}
+                            <a href="{% url 'web:incident_acknowledge' incident.pk %}" class="a-btn a-btn--soft-warning a-btn--sm">
+                                <i class="fa-regular fa-handshake"></i> Подтвердить
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'web:incident_resolve' incident.pk %}" class="a-btn a-btn--soft-success a-btn--sm">
+                                <i class="fa-regular fa-circle-check"></i> Разрешить
+                            </a>
+                            {% else %}
+                            <span class="a-meta text-center">
+                                <i class="fa-regular fa-lock"></i> Закрыт
+                            </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="a-divider"></div>
+
+    <p class="a-meta text-center mb-0">
+        <i class="fa-regular fa-list"></i> Показано {{ incidents_count }} инцидентов
+        {% with active=active_count %}
+        <span class="ms-2">
+            <i class="fa-regular fa-circle-exclamation text-danger"></i>
+            Активных: <strong class="text-danger">{{ active }}</strong>
+        </span>
+        {% endwith %}
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

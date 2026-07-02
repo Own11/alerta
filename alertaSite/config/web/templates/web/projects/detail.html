@@ -1,0 +1,129 @@
+{% extends 'web/base.html' %}
+
+{% block title %}{{ project.name }} - Проект{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <div class="a-card__header mb-0">
+        <div>
+            <h1 class="a-page-header__title">
+                <i class="fa-regular fa-folder-tree text-green"></i> {{ project.name }}
+            </h1>
+            {% if project.description %}
+            <p class="a-page-header__desc">{{ project.description }}</p>
+            {% endif %}
+        </div>
+        <div class="a-actions">
+            <a href="{% url 'web:monitor_create' %}?project={{ project.pk }}" class="a-btn a-btn--primary a-btn--sm">
+                <i class="fa-solid fa-plus"></i> Добавить монитор
+            </a>
+            <a href="{% url 'web:project_edit' project.pk %}" class="a-btn a-btn--ghost a-btn--sm">
+                <i class="fa-regular fa-pen-to-square"></i> Редактировать
+            </a>
+            {% if project.status_page_enabled %}
+            <a href="{% url 'web:status_page' project.slug %}" target="_blank" class="a-btn a-btn--ghost a-btn--sm">
+                <i class="fa-regular fa-globe"></i> Статус-страница
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if active_incidents_count %}
+<div class="a-card a-card--danger mb-4">
+    <p class="mb-0">
+        <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+        Активных инцидентов в проекте: <strong>{{ active_incidents_count }}</strong>
+        <a href="{% url 'web:incidents_list' %}" class="a-link ms-2">Перейти к журналу</a>
+    </p>
+</div>
+{% endif %}
+
+<div class="a-card">
+    <div class="a-card__header">
+        <h2 class="a-card__title">
+            <i class="fa-solid fa-server text-green"></i> Мониторы проекта
+            <span class="a-badge a-badge--count">{{ monitors_count }}</span>
+        </h2>
+    </div>
+
+    {% if not monitors %}
+    <div class="a-empty">
+        <div class="a-empty__icon"><i class="fa-regular fa-eye-slash"></i></div>
+        <p class="a-empty__title">В этом проекте пока нет мониторов</p>
+        <p class="a-empty__desc">Добавьте первый монитор для отслеживания доступности.</p>
+        <a href="{% url 'web:monitor_create' %}?project={{ project.pk }}" class="a-btn a-btn--primary a-btn--sm">
+            <i class="fa-solid fa-plus"></i> Добавить первый монитор
+        </a>
+    </div>
+    {% else %}
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Статус</th>
+                    <th>Название</th>
+                    <th>URL</th>
+                    <th class="text-center">Интервал</th>
+                    <th class="text-center">Uptime</th>
+                    <th class="text-center">SSL</th>
+                    <th class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for monitor in monitors %}
+                <tr>
+                    <td>
+                        {% if monitor.is_paused %}
+                        <span class="a-badge a-badge--muted">ПАУЗА</span>
+                        {% elif monitor.last_status == 'up' %}
+                        <span class="a-badge a-badge--up">UP</span>
+                        {% elif monitor.last_status == 'down' %}
+                        <span class="a-badge a-badge--down">DOWN</span>
+                        {% else %}
+                        <span class="a-badge a-badge--warn">CHECK</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'web:monitor_detail' monitor.pk %}" class="a-link fw-semibold">{{ monitor.name }}</a></td>
+                    <td class="a-meta">{{ monitor.url|truncatechars:35 }}</td>
+                    <td class="text-center a-meta">{{ monitor.check_interval }}с</td>
+                    <td class="text-center fw-bold text-green">{{ monitor.uptime_percentage }}%</td>
+                    <td class="text-center">
+                        {% if monitor.ssl_enabled %}
+                            {% if monitor.ssl_status == 'ok' %}
+                            <span class="text-green a-meta"><i class="fa-solid fa-lock"></i> OK</span>
+                            {% elif monitor.ssl_status == 'warning' %}
+                            <span class="text-warning a-meta"><i class="fa-solid fa-lock"></i> {{ monitor.ssl_days_left }}д</span>
+                            {% elif monitor.ssl_status == 'expired' %}
+                            <span class="text-danger a-meta"><i class="fa-solid fa-lock-open"></i> Истёк</span>
+                            {% else %}
+                            <span class="a-meta">—</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="a-meta">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="a-actions justify-content-center">
+                            <a href="{% url 'web:monitor_toggle' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm" title="Пауза/Запуск">
+                                <i class="fa-solid fa-{% if monitor.is_paused %}play{% else %}pause{% endif %}"></i>
+                            </a>
+                            <a href="{% url 'web:monitor_edit' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm" title="Редактировать">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<p class="mt-3 mb-0">
+    <a href="{% url 'web:projects_list' %}" class="a-link">
+        <i class="fa-regular fa-arrow-left"></i> Все проекты
+    </a>
+</p>
+{% endblock %}

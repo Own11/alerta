@@ -1,0 +1,187 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Настройки уведомлений - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">Настройки уведомлений</h1>
+    <p class="a-page-header__desc">Подключите каналы оповещений, чтобы получать уведомления о сбоях мгновенно.</p>
+</div>
+
+<div class="a-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-solid fa-sliders"></i> Каналы уведомлений
+            </h2>
+            <div class="row g-3">
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="notify_telegram" id="notify_telegram" class="form-check-input"
+                            {% if user.notify_telegram %}checked{% endif %}>
+                        <label class="form-check-label" for="notify_telegram">Telegram</label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="notify_slack" id="notify_slack" class="form-check-input"
+                            {% if user.notify_slack %}checked{% endif %}>
+                        <label class="form-check-label" for="notify_slack">Slack</label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="notify_email" id="notify_email" class="form-check-input"
+                            {% if user.notify_email %}checked{% endif %}>
+                        <label class="form-check-label" for="notify_email">Email</label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="notify_push" id="notify_push" class="form-check-input"
+                            {% if user.notify_push %}checked{% endif %}>
+                        <label class="form-check-label" for="notify_push">Push (FCM)</label>
+                    </div>
+                </div>
+            </div>
+            <p class="a-meta mt-2 mb-0">Выберите, куда отправлять алерты, SSL-предупреждения и отчёты.</p>
+        </div>
+
+        {% if plan_limits.reports_enabled %}
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-regular fa-envelope"></i> Отчёты по мониторингу
+            </h2>
+            <label class="a-form-label" for="report_frequency">Частота отчётов (группировка по проектам)</label>
+            <div class="col-sm-6 col-md-4 px-0">
+                <select name="report_frequency" id="report_frequency" class="form-select">
+                    <option value="off" {% if user.report_frequency == 'off' %}selected{% endif %}>Выключено</option>
+                    <option value="daily" {% if user.report_frequency == 'daily' %}selected{% endif %}>Ежедневно</option>
+                    <option value="weekly" {% if user.report_frequency == 'weekly' %}selected{% endif %}>Еженедельно (понедельник)</option>
+                </select>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-brands fa-telegram"></i> Telegram
+            </h2>
+            <p class="a-meta">
+                <i class="fa-regular fa-circle-info me-1"></i>
+                Напишите нашему боту <code class="a-badge a-badge--count">@AlertaMonitorBot</code>
+                команду <code class="a-badge a-badge--count">/start</code>,
+                чтобы получить ваш Chat ID, и вставьте его ниже.
+            </p>
+            <label class="a-form-label" for="telegram_chat_id">
+                <i class="fa-regular fa-id-card me-1"></i> Telegram Chat ID
+            </label>
+            <input type="text" name="telegram_chat_id" id="telegram_chat_id" class="a-form-control"
+                value="{{ user.telegram_chat_id|default:'' }}" placeholder="Например: 123456789">
+            {% if user.telegram_chat_id %}
+            <span class="a-badge a-badge--success mt-2">
+                <i class="fa-regular fa-circle-check"></i> Telegram подключен
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-brands fa-slack"></i> Slack
+            </h2>
+            <p class="a-meta">
+                <i class="fa-regular fa-circle-info me-1"></i>
+                Создайте Incoming Webhook в настройках вашего Slack-воркспейса и вставьте URL ниже.
+            </p>
+            <label class="a-form-label" for="slack_webhook_url">
+                <i class="fa-regular fa-link me-1"></i> Slack Webhook URL
+            </label>
+            <input type="url" name="slack_webhook_url" id="slack_webhook_url" class="a-form-control"
+                value="{{ user.slack_webhook_url|default:'' }}"
+                placeholder="https://hooks.slack.com/services/T.../B.../...">
+            {% if user.slack_webhook_url %}
+            <span class="a-badge a-badge--success mt-2">
+                <i class="fa-regular fa-circle-check"></i> Slack подключен
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-solid fa-bell"></i> Web Push (FCM)
+            </h2>
+            <p class="a-meta">
+                <i class="fa-regular fa-circle-info me-1"></i>
+                Нажмите кнопку ниже, чтобы разрешить push-уведомления в браузере.
+                FCM-токен будет автоматически сохранён.
+            </p>
+            <button type="button" class="a-btn a-btn--soft-warning" onclick="requestPushPermission()">
+                <i class="fa-regular fa-bell"></i> Разрешить push-уведомления
+            </button>
+            <input type="hidden" name="fcm_device_token" id="fcmTokenInput"
+                value="{{ user.fcm_device_token|default:'' }}">
+            {% if user.fcm_device_token %}
+            <span class="a-badge a-badge--success mt-2 d-block">
+                <i class="fa-regular fa-circle-check"></i> Push-уведомления подключены.
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-regular fa-star"></i> Ваш тарифный план
+            </h2>
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                <span class="a-plan-badge">
+                    <i class="fa-regular fa-gem"></i> {{ user.get_plan_display }}
+                    {% if effective_plan != user.plan %}<small>(активен: {{ effective_plan|upper }})</small>{% endif %}
+                </span>
+                <span class="a-meta">
+                    <i class="fa-regular fa-clock me-1"></i>
+                    Мин. интервал проверки: <strong class="text-green">{{ plan_limits.min_interval }} сек.</strong>
+                </span>
+                <span class="a-meta">
+                    <i class="fa-regular fa-brain me-1"></i>
+                    AI: {{ user.ai_used_today }} / {{ user.ai_daily_limit }}
+                </span>
+            </div>
+            {% if subscription and subscription.stripe_subscription_id %}
+            <p class="a-meta mb-2">
+                Подписка: <span class="text-green">{{ subscription.status }}</span>
+                {% if subscription.current_period_end %} до {{ subscription.current_period_end|date:"d.m.Y" }}{% endif %}
+            </p>
+            <div class="a-actions mb-2">
+                <a href="{% url 'web:billing_portal' %}" class="a-btn a-btn--ghost a-btn--sm">
+                    <i class="fa-regular fa-credit-card"></i> Управление подпиской
+                </a>
+            </div>
+            {% endif %}
+            <a href="{% url 'web:pricing' %}" class="a-btn a-btn--primary a-btn--sm">
+                <i class="fa-regular fa-arrow-right"></i> Сменить тариф
+            </a>
+        </div>
+
+        <button type="submit" class="a-btn a-btn--primary">
+            <i class="fa-regular fa-floppy-disk"></i> Сохранить настройки
+        </button>
+    </form>
+</div>
+
+<script>
+    function requestPushPermission() {
+        if (!('Notification' in window)) {
+            alert('Ваш браузер не поддерживает push-уведомления.');
+            return;
+        }
+        Notification.requestPermission().then(function (permission) {
+            if (permission === 'granted') {
+                alert('✅ Push-уведомления разрешены! В production-среде FCM-токен сохраняется автоматически.');
+            } else {
+                alert('❌ Вы отказали в разрешении на push-уведомления.');
+            }
+        });
+    }
+</script>
+{% endblock %}

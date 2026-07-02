@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Alerta — Мониторинг сайтов{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'web/css/alerta.css' %}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <div class="a-app{% if not user.is_authenticated and request.resolver_match.url_name != 'landing' %} a-app--auth{% endif %}">
+
+        <header class="a-topbar">
+            <a class="a-brand" href="{% if user.is_authenticated %}{% url 'web:dashboard' %}{% else %}{% url 'web:landing' %}{% endif %}">
+                <span class="a-brand__icon"><i class="fa-solid fa-signal"></i></span>
+                <span class="a-brand__text">Alerta</span>
+            </a>
+
+            <div class="a-topbar__actions">
+                {% if user.is_authenticated and request.resolver_match.url_name != 'landing' %}
+                <button type="button" class="a-topbar__menu-btn d-lg-none" id="sidebarToggle" aria-label="Меню">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="a-plan-badge d-none d-md-inline-flex">
+                    <i class="fa-regular fa-gem"></i> {{ user.get_plan_display }}
+                </span>
+                <a href="{% url 'web:settings' %}" class="a-btn a-btn--ghost a-btn--sm d-none d-sm-inline-flex">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span class="d-none d-md-inline">Настройки</span>
+                </a>
+                <a href="{% url 'web:logout' %}" class="a-btn a-btn--primary a-btn--sm">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span class="d-none d-sm-inline">Выйти</span>
+                </a>
+                {% elif request.resolver_match.url_name == 'landing' %}
+                {% if user.is_authenticated %}
+                <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--primary a-btn--sm">
+                    <i class="fa-solid fa-chart-simple"></i> Панель
+                </a>
+                {% else %}
+                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm">Вход</a>
+                <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--sm">Регистрация</a>
+                {% endif %}
+                {% else %}
+                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm">Вход</a>
+                <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--sm">Регистрация</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="a-shell">
+            {% if user.is_authenticated and request.resolver_match.url_name != 'landing' %}
+            <div class="a-sidebar-overlay" id="sidebarOverlay"></div>
+            <aside class="a-sidebar" id="appSidebar">
+                <p class="a-sidebar__label">Меню</p>
+                <a href="{% url 'web:dashboard' %}" class="a-sidebar__link{% if request.resolver_match.url_name == 'dashboard' %} is-active{% endif %}">
+                    <i class="fa-solid fa-gauge-high"></i> Панель управления
+                </a>
+                <a href="{% url 'web:projects_list' %}" class="a-sidebar__link{% if 'project' in request.resolver_match.url_name %} is-active{% endif %}">
+                    <i class="fa-solid fa-folder-tree"></i> Проекты
+                </a>
+                <a href="{% url 'web:incidents_list' %}" class="a-sidebar__link{% if 'incident' in request.resolver_match.url_name %} is-active{% endif %}">
+                    <i class="fa-solid fa-bolt"></i> Инциденты
+                </a>
+                <a href="{% url 'web:notifications_list' %}" class="a-sidebar__link{% if 'notification' in request.resolver_match.url_name %} is-active{% endif %}">
+                    <i class="fa-regular fa-bell"></i> Уведомления
+                </a>
+                <a href="{% url 'web:ai_chat' %}" class="a-sidebar__link{% if 'ai_chat' in request.resolver_match.url_name %} is-active{% endif %}">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Ассистент
+                </a>
+
+                <p class="a-sidebar__label mt-4">Аккаунт</p>
+                <a href="{% url 'web:pricing' %}" class="a-sidebar__link{% if 'pricing' in request.resolver_match.url_name or 'billing' in request.resolver_match.url_name %} is-active{% endif %}">
+                    <i class="fa-regular fa-credit-card"></i> Тарифы
+                </a>
+                <a href="{% url 'web:settings' %}" class="a-sidebar__link{% if request.resolver_match.url_name == 'settings' %} is-active{% endif %}">
+                    <i class="fa-solid fa-sliders"></i> Настройки
+                </a>
+            </aside>
+            {% endif %}
+
+            <main class="a-main">
+                <div class="a-main__inner">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="a-alert alert-dismissible fade show" role="alert">
+                        <i class="fa-regular fa-circle-check" style="color: var(--a-success); margin-top: 2px;"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    {% if request.resolver_match.url_name == 'landing' %}
+                    {% block landing_content %}{% endblock %}
+                    {% elif user.is_authenticated %}
+                    {% block content %}{% endblock %}
+                    {% else %}
+                    {% block guest_content %}{% endblock %}
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+
+        <footer class="a-footer">
+            <span>&copy; 2026 Fuse</span>
+            <span class="mx-2 opacity-50">·</span>
+            <span>Мониторинг доступности сервисов</span>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var toggle = document.getElementById('sidebarToggle');
+            var sidebar = document.getElementById('appSidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!toggle || !sidebar) return;
+            function open() { sidebar.classList.add('is-open'); overlay.classList.add('is-visible'); }
+            function close() { sidebar.classList.remove('is-open'); overlay.classList.remove('is-visible'); }
+            toggle.addEventListener('click', function () {
+                sidebar.classList.contains('is-open') ? close() : open();
+            });
+            overlay.addEventListener('click', close);
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

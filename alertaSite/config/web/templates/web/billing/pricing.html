@@ -1,0 +1,122 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Тарифные планы - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header text-center">
+    <h1 class="a-page-header__title">
+        <i class="fa-regular fa-star text-green me-2"></i>Тарифные планы
+    </h1>
+    <p class="a-page-header__desc">Выберите оптимальный тариф для надежного мониторинга ваших ресурсов</p>
+</div>
+
+<div class="a-pricing-grid mb-4 mb-md-5">
+    <div class="a-card a-pricing-card{% if user.plan == 'free' %} is-active{% endif %}">
+        <div class="a-card__header mb-0">
+            <h2 class="a-card__title mb-0">Free</h2>
+            <span class="a-badge a-badge--muted">
+                <i class="fa-regular fa-circle-check"></i> Бесплатно
+            </span>
+        </div>
+        <div class="a-pricing-card__price">$0</div>
+        <p class="a-meta mb-0">Навсегда</p>
+        <ul class="a-pricing-card__features">
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> 5 Мониторов</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Интервал: 300 сек (5 мин)</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Хранение истории: 7 дней</li>
+            <li><i class="fa-regular fa-circle-xmark me-2"></i> AI-ассистент недоступен</li>
+            <li><i class="fa-regular fa-circle-xmark me-2"></i> Отчеты по почте недоступны</li>
+        </ul>
+        {% if user.plan == 'free' %}
+        <span class="a-btn a-btn--soft-success w-100">
+            <i class="fa-regular fa-circle-check"></i> Ваш текущий тариф
+        </span>
+        {% else %}
+        <span class="a-btn a-btn--ghost w-100">Базовый тариф</span>
+        {% endif %}
+    </div>
+
+    <div class="a-card a-pricing-card{% if user.plan == 'pro' %} is-active{% endif %}">
+        {% if user.plan != 'pro' %}
+        <span class="a-pricing-popular">
+            <i class="fa-regular fa-fire me-1"></i> Популярный
+        </span>
+        {% endif %}
+        <div class="a-card__header mb-0{% if user.plan != 'pro' %} mt-2{% endif %}">
+            <h2 class="a-card__title mb-0">Pro</h2>
+            <span class="a-badge a-badge--success">
+                <i class="fa-regular fa-crown"></i> Профессиональный
+            </span>
+        </div>
+        <div class="a-pricing-card__price">$19</div>
+        <p class="a-meta mb-0">В месяц</p>
+        <ul class="a-pricing-card__features">
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> 50 Мониторов</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Интервал: 60 сек (1 мин)</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Хранение истории: 30 дней</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> AI-ассистент (50 запр./день)</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Ежедневные отчеты на почту</li>
+        </ul>
+        {% if user.plan == 'pro' %}
+        <span class="a-btn a-btn--soft-success w-100">
+            <i class="fa-regular fa-circle-check"></i> Ваш текущий тариф
+        </span>
+        {% else %}
+        <button type="button" class="a-btn a-btn--primary w-100" onclick="checkout('pro')">
+            <i class="fa-regular fa-arrow-right"></i> Оформить подписку
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="a-card a-pricing-card{% if user.plan == 'business' %} is-active{% endif %}">
+        <div class="a-card__header mb-0">
+            <h2 class="a-card__title mb-0">Business</h2>
+            <span class="a-badge a-badge--count">
+                <i class="fa-regular fa-building"></i> Для бизнеса
+            </span>
+        </div>
+        <div class="a-pricing-card__price">$49</div>
+        <p class="a-meta mb-0">В месяц</p>
+        <ul class="a-pricing-card__features">
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> 200 Мониторов</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Интервал: 30 сек</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Хранение истории: 365 дней</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> AI-ассистент (500 запр./день)</li>
+            <li><i class="fa-regular fa-circle-check text-green me-2"></i> Отчеты + приоритетная поддержка</li>
+        </ul>
+        {% if user.plan == 'business' %}
+        <span class="a-btn a-btn--soft-success w-100">
+            <i class="fa-regular fa-circle-check"></i> Ваш текущий тариф
+        </span>
+        {% else %}
+        <button type="button" class="a-btn a-btn--primary w-100" onclick="checkout('business')">
+            <i class="fa-regular fa-arrow-right"></i> Оформить подписку
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function checkout(plan) {
+        fetch('/api/billing/create-checkout-session/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ plan: plan })
+        })
+            .then(response => response.json())
+            .then(session => {
+                if (session.url) {
+                    window.location.href = session.url;
+                } else if (session.error) {
+                    alert('Ошибка: ' + session.error);
+                }
+            })
+            .catch(err => console.error('Error:', err));
+    }
+</script>
+{% endblock %}

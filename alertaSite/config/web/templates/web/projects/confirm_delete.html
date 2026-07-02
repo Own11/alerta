@@ -1,0 +1,41 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Удалить проект - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-card a-card--danger text-center">
+    <div class="a-empty">
+        <div class="a-empty__icon text-danger"><i class="fa-regular fa-trash-can"></i></div>
+        <p class="a-empty__title">Удалить проект?</p>
+        <p class="a-empty__desc">
+            Вы уверены, что хотите удалить проект
+            <strong class="text-green">{{ project.name }}</strong>?
+        </p>
+
+        <div class="a-form-section text-start">
+            <p class="a-meta mb-0">
+                <i class="fa-regular fa-circle-exclamation text-danger"></i>
+                Все мониторы, связанные с этим проектом, будут
+                <strong class="text-danger">удалены навсегда</strong>.
+                Это действие невозможно отменить.
+            </p>
+        </div>
+
+        <form method="post" class="a-actions justify-content-center mt-4">
+            {% csrf_token %}
+            <button type="submit" class="a-btn a-btn--soft-danger">
+                <i class="fa-regular fa-trash-can"></i> Да, удалить
+            </button>
+            <a href="{% url 'web:projects_list' %}" class="a-btn a-btn--ghost">
+                <i class="fa-regular fa-xmark"></i> Отмена
+            </a>
+        </form>
+
+        <div class="a-divider"></div>
+
+        <p class="a-meta mb-0">
+            <i class="fa-regular fa-clock"></i> Это действие не может быть отменено
+        </p>
+    </div>
+</div>
+{% endblock %}

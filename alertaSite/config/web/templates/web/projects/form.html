@@ -1,0 +1,98 @@
+{% extends 'web/base.html' %}
+
+{% block title %}{{ title }} - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">
+        <i class="fa-regular fa-folder text-green"></i> {{ title }}
+    </h1>
+    <p class="a-page-header__desc">
+        {% if 'Создать' in title or 'Добавить' in title %}
+        Создайте новый проект для объединения мониторов
+        {% else %}
+        Отредактируйте параметры проекта
+        {% endif %}
+    </p>
+</div>
+
+<div class="a-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-regular fa-folder-open"></i> Параметры проекта
+            </h2>
+
+            {% for field in form %}
+            <div class="mb-4">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-check ps-0">
+                    <label class="form-check-label d-flex align-items-center gap-2">
+                        {{ field }}
+                        <span>{{ field.label }}</span>
+                    </label>
+                    {% if field.help_text %}
+                    <div class="a-meta mt-1">
+                        <i class="fa-regular fa-circle-info"></i> {{ field.help_text }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <label class="a-form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                    <span class="text-danger">*</span>
+                    {% endif %}
+                </label>
+
+                {% if field.field.widget.input_type == 'textarea' %}
+                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="a-form-control form-control" rows="4"
+                    {% if field.field.required %}required{% endif %}
+                    placeholder="{{ field.label }}">{{ field.value|default:'' }}</textarea>
+                {% elif field.field.choices %}
+                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="a-form-control form-select"
+                    {% if field.field.required %}required{% endif %}>
+                    {% for choice in field.field.choices %}
+                    <option value="{{ choice.0 }}" {% if field.value|stringformat:"s" == choice.0|stringformat:"s" %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                    class="a-form-control form-control"
+                    value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}
+                    placeholder="{{ field.label }}">
+                {% endif %}
+                {% endif %}
+
+                {% if field.errors %}
+                <div class="text-danger a-meta mt-1">
+                    <i class="fa-regular fa-circle-exclamation"></i> {{ field.errors.0 }}
+                </div>
+                {% endif %}
+
+                {% if field.help_text and field.field.widget.input_type != 'checkbox' %}
+                <div class="a-meta mt-1">
+                    <i class="fa-regular fa-circle-info"></i> {{ field.help_text }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="a-divider"></div>
+
+        <div class="a-actions">
+            <button type="submit" class="a-btn a-btn--primary">
+                <i class="fa-regular fa-floppy-disk"></i> Сохранить
+            </button>
+            <a href="{% url 'web:projects_list' %}" class="a-btn a-btn--ghost">
+                <i class="fa-regular fa-xmark"></i> Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

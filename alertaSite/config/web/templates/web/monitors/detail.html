@@ -1,0 +1,269 @@
+{% extends 'web/base.html' %}
+
+{% block title %}{{ monitor.name }} - Детали монитора{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h1 class="a-page-header__title mb-0">{{ monitor.name }}</h1>
+                {% if monitor.is_paused %}
+                <span class="a-badge a-badge--muted">
+                    <i class="fa-solid fa-pause"></i> Приостановлен
+                </span>
+                {% endif %}
+            </div>
+            <p class="a-page-header__desc mb-0">
+                <i class="fa-regular fa-link me-1"></i> {{ monitor.url }}
+            </p>
+        </div>
+        <div class="a-actions">
+            <a href="{% url 'web:monitor_run_check' monitor.pk %}" class="a-btn a-btn--primary a-btn--sm">
+                <i class="fa-solid fa-rotate"></i> Проверить сейчас
+            </a>
+            {% if monitor.is_paused %}
+            <a href="{% url 'web:monitor_toggle' monitor.pk %}" class="a-btn a-btn--soft-success a-btn--sm">
+                <i class="fa-solid fa-play"></i> Запустить
+            </a>
+            {% else %}
+            <a href="{% url 'web:monitor_toggle' monitor.pk %}" class="a-btn a-btn--soft-warning a-btn--sm">
+                <i class="fa-solid fa-pause"></i> Пауза
+            </a>
+            {% endif %}
+            <a href="{% url 'web:monitor_edit' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm">
+                <i class="fa-regular fa-pen-to-square"></i> Редактировать
+            </a>
+            <a href="{% url 'web:monitor_delete' monitor.pk %}" class="a-btn a-btn--soft-danger a-btn--sm" title="Удалить">
+                <i class="fa-regular fa-trash-can"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="a-stat-grid">
+    <div class="a-stat {% if monitor.is_paused %}a-stat--neutral{% elif monitor.last_status == 'up' %}a-stat--success{% elif monitor.last_status == 'down' %}a-stat--danger{% endif %}">
+        <div class="a-stat__label"><i class="fa-solid fa-signal"></i> Текущий статус</div>
+        <div class="a-stat__value">
+            {% if monitor.is_paused %}
+            <span class="a-meta"><i class="fa-solid fa-pause me-1"></i> ПАУЗА</span>
+            {% elif monitor.last_status == 'up' %}
+            <i class="fa-regular fa-circle-check me-1"></i> UP
+            {% elif monitor.last_status == 'down' %}
+            <i class="fa-regular fa-circle-xmark me-1"></i> DOWN
+            {% else %}
+            <i class="fa-solid fa-spinner fa-spin me-1"></i> CHECK
+            {% endif %}
+        </div>
+    </div>
+    <div class="a-stat a-stat--success">
+        <div class="a-stat__label"><i class="fa-solid fa-chart-line"></i> Uptime (Общий)</div>
+        <div class="a-stat__value">{{ monitor.uptime_percentage|default:"0" }}%</div>
+    </div>
+    <div class="a-stat a-stat--neutral">
+        <div class="a-stat__label"><i class="fa-regular fa-clock"></i> Интервал проверки</div>
+        <div class="a-stat__value">{{ monitor.check_interval|default:"60" }}<span class="a-meta">с</span></div>
+    </div>
+    <div class="a-stat {% if monitor.ssl_enabled and monitor.ssl_status == 'ok' %}a-stat--success{% elif monitor.ssl_enabled and monitor.ssl_status == 'expired' %}a-stat--danger{% else %}a-stat--neutral{% endif %}">
+        <div class="a-stat__label"><i class="fa-solid fa-lock"></i> SSL сертификат</div>
+        <div class="a-stat__value">
+            {% if not monitor.ssl_enabled %}
+            <span class="a-meta">Откл.</span>
+            {% elif monitor.ssl_status == 'ok' %}
+            OK
+            {% elif monitor.ssl_status == 'warning' %}
+            <span class="text-warning">Скоро</span>
+            {% elif monitor.ssl_status == 'expired' %}
+            <span class="text-danger">Истёк</span>
+            {% else %}
+            <span class="a-meta">…</span>
+            {% endif %}
+        </div>
+        {% if monitor.ssl_enabled and monitor.ssl_days_left %}
+        <p class="a-meta mb-0 mt-2">{{ monitor.ssl_days_left }} дн.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="a-card mb-4">
+    <div class="a-card__header">
+        <div>
+            <h2 class="a-card__title">
+                <i class="fa-regular fa-chart-line"></i> История доступности
+            </h2>
+            <p class="a-card__subtitle">За последние 10 проверок</p>
+        </div>
+    </div>
+    <div class="a-chart">
+        <canvas id="uptimeChart"></canvas>
+    </div>
+</div>
+
+<div class="a-card">
+    <div class="a-card__header">
+        <h2 class="a-card__title">
+            <i class="fa-regular fa-clock"></i> История инцидентов
+        </h2>
+        <div class="a-actions" role="group" aria-label="Фильтр по дням">
+            <a href="?days=1" class="a-btn a-btn--sm {% if days == 1 %}a-btn--soft-success{% else %}a-btn--ghost{% endif %}">1 день</a>
+            <a href="?days=7" class="a-btn a-btn--sm {% if days == 7 %}a-btn--soft-success{% else %}a-btn--ghost{% endif %}">7 дней</a>
+            <a href="?days=30" class="a-btn a-btn--sm {% if days == 30 %}a-btn--soft-success{% else %}a-btn--ghost{% endif %}">30 дней</a>
+        </div>
+    </div>
+
+    {% if not incidents %}
+    <div class="a-empty">
+        <div class="a-empty__icon"><i class="fa-regular fa-shield-halved"></i></div>
+        <p class="a-empty__title">За выбранный период инцидентов не зарегистрировано</p>
+        <p class="a-empty__desc">Ваш сайт работает стабильно!</p>
+    </div>
+    {% else %}
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Начало</th>
+                    <th>Завершение</th>
+                    <th>Длительность</th>
+                    <th>Причина сбоя</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in incidents %}
+                <tr>
+                    <td class="a-meta">{{ incident.started_at|date:"Y-m-d H:i:s" }}</td>
+                    <td class="a-meta">
+                        {% if incident.resolved_at %}
+                        {{ incident.resolved_at|date:"Y-m-d H:i:s" }}
+                        {% else %}
+                        <span class="text-danger">Активен</span>
+                        {% endif %}
+                    </td>
+                    <td class="a-meta">
+                        {% if incident.duration %}
+                        {{ incident.duration }} сек.
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td class="text-danger">{{ incident.reason }}</td>
+                    <td>
+                        {% if incident.resolved_at %}
+                        <span class="a-badge a-badge--up">
+                            <i class="fa-regular fa-circle-check"></i> Разрешен
+                        </span>
+                        {% else %}
+                        <span class="a-badge a-badge--down">
+                            <i class="fa-regular fa-circle-exclamation"></i> Активный
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="a-meta text-center mb-0 mt-3">
+        <i class="fa-regular fa-list me-1"></i> Показано {{ incidents_count }} инцидентов
+    </p>
+    {% endif %}
+</div>
+
+{{ chart_labels|json_script:"chart-labels-data" }}
+{{ chart_data|json_script:"chart-values-data" }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('uptimeChart').getContext('2d');
+        var labels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+        var dataPoints = JSON.parse(document.getElementById('chart-values-data').textContent);
+
+        if (!labels.length) {
+            labels = ['—'];
+            dataPoints = [{{ monitor.uptime_percentage|default:"100" }}];
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Доступность (%)',
+                    data: dataPoints,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#34d399',
+                    pointBorderColor: '#09090b',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#71717a',
+                            font: { size: 11 },
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#71717a',
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: '#a1a1aa',
+                            font: { size: 12, weight: '600' },
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 17, 20, 0.95)',
+                        titleColor: '#fafafa',
+                        bodyColor: '#34d399',
+                        borderColor: 'rgba(52, 211, 153, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Доступность: ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

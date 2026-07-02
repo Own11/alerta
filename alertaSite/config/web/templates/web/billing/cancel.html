@@ -1,0 +1,53 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Оплата отменена - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-card">
+    <div class="a-empty">
+        <div class="a-empty__icon text-warning">
+            <i class="fa-regular fa-circle-xmark"></i>
+        </div>
+        <h2 class="a-empty__title">Оплата отменена</h2>
+        <p class="a-empty__desc mb-2">Вы отменили процесс оплаты.</p>
+        <p class="a-meta mb-4">Ваш текущий тарифный план остался без изменений.</p>
+
+        <div class="col-12 col-md-8 col-lg-6 mx-auto mb-4 px-0">
+            <div class="a-alert">
+                <i class="fa-regular fa-circle-info text-warning"></i>
+                <span class="a-meta mb-0">
+                    Вы можете продолжить пользоваться текущим тарифом или выбрать другой план в любое время.
+                </span>
+            </div>
+        </div>
+
+        <div class="a-actions justify-content-center mb-4">
+            <a href="{% url 'web:pricing' %}" class="a-btn a-btn--primary a-btn--lg">
+                <i class="fa-regular fa-credit-card"></i> Вернуться к тарифам
+            </a>
+            <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--ghost a-btn--lg">
+                <i class="fa-regular fa-house"></i> На главную
+            </a>
+        </div>
+
+        <div class="a-divider"></div>
+        <p class="a-meta mb-0">
+            <i class="fa-regular fa-clock me-1"></i>
+            Если у вас возникли вопросы, обратитесь в <a href="#" class="a-link">службу поддержки</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Пользователь отменил оплату');
+
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'payment_cancelled', {
+                'event_category': 'Payment',
+                'event_label': 'Pricing page'
+            });
+        }
+    });
+</script>
+{% endblock %}

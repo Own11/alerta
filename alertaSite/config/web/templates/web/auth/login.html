@@ -1,0 +1,112 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Вход - Alerta{% endblock %}
+
+{% block guest_content %}
+<div class="a-auth-card a-card a-card--accent">
+    <div class="text-center mb-4">
+        <div class="a-auth-card__icon">
+            <i class="fa-regular fa-lock"></i>
+        </div>
+        <h3 class="fw-bold mb-2">Вход в систему</h3>
+        <p class="a-meta mb-0">Введите свои учетные данные для доступа</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="a-form-label" for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}
+                <span class="text-danger">*</span>
+                {% endif %}
+            </label>
+
+            {% if field.field.widget.input_type == 'password' %}
+            <div class="position-relative">
+                <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                    class="a-form-control pe-5"
+                    {% if field.field.required %}required{% endif %}
+                    placeholder="Введите {{ field.label|lower }}">
+                <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted pe-3"
+                    onclick="togglePasswordVisibility('{{ field.id_for_label }}')" aria-label="Показать пароль">
+                    <i class="fa-regular fa-eye" id="eyeIcon_{{ field.id_for_label }}"></i>
+                </button>
+            </div>
+            {% else %}
+            <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}"
+                id="{{ field.id_for_label }}" class="a-form-control"
+                value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}
+                placeholder="Введите {{ field.label|lower }}">
+            {% endif %}
+
+            {% if field.errors %}
+            <div class="text-danger small mt-1">
+                <i class="fa-regular fa-circle-exclamation me-1"></i>{{ field.errors.0 }}
+            </div>
+            {% endif %}
+
+            {% if field.help_text %}
+            <div class="a-meta mt-1">
+                <i class="fa-regular fa-circle-info me-1"></i>{{ field.help_text }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="form-check mb-0">
+                <input type="checkbox" name="remember" id="remember" class="form-check-input">
+                <label class="form-check-label a-meta" for="remember">Запомнить меня</label>
+            </div>
+            <a href="#" class="a-link">Забыли пароль?</a>
+        </div>
+
+        <button type="submit" class="a-btn a-btn--primary a-btn--lg w-100 mt-2">
+            <i class="fa-regular fa-arrow-right-to-bracket"></i> Войти
+        </button>
+    </form>
+
+    <div class="a-divider"></div>
+    <p class="text-center mb-0">
+        <span class="a-meta">Нет аккаунта?</span>
+        <a href="{% url 'web:register' %}" class="a-link ms-1">
+            Зарегистрироваться <i class="fa-regular fa-arrow-right"></i>
+        </a>
+    </p>
+</div>
+
+<script>
+    function togglePasswordVisibility(inputId) {
+        var input = document.getElementById(inputId);
+        var icon = document.getElementById('eyeIcon_' + inputId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-regular fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-regular fa-eye';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.querySelector('form');
+        var inputs = form.querySelectorAll('input');
+
+        inputs.forEach(function (input) {
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    form.submit();
+                }
+            });
+        });
+
+        if (inputs.length > 0) {
+            inputs[0].focus();
+        }
+    });
+</script>
+{% endblock %}

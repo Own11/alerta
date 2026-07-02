@@ -1,0 +1,63 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Удалить монитор - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">Удалить монитор</h1>
+    <p class="a-page-header__desc">Подтвердите удаление монитора и всех связанных данных</p>
+</div>
+
+<div class="a-card a-card--danger">
+    <div class="a-empty py-4">
+        <div class="a-empty__icon text-danger"><i class="fa-regular fa-circle-xmark"></i></div>
+        <p class="a-empty__title">Вы уверены, что хотите удалить монитор?</p>
+        <p class="a-empty__desc">
+            Монитор <strong class="text-green">{{ monitor.name }}</strong> будет удалён без возможности восстановления.
+        </p>
+
+        <div class="a-notice-box a-notice-box--muted a-notice-box--centered mb-3">
+            <p class="a-meta mb-0">
+                <i class="fa-regular fa-link me-2"></i>
+                <span class="text-secondary">{{ monitor.url }}</span>
+            </p>
+        </div>
+
+        <div class="a-notice-box a-notice-box--centered mb-4">
+            <p class="a-meta mb-0">
+                <i class="fa-regular fa-circle-exclamation me-2 text-danger"></i>
+                Все данные проверок будут <strong class="text-danger">безвозвратно удалены</strong>.
+                Это действие невозможно отменить.
+            </p>
+        </div>
+
+        <form method="post" class="a-actions justify-content-center">
+            {% csrf_token %}
+            <button type="submit" class="a-btn a-btn--danger">
+                <i class="fa-regular fa-trash-can"></i> Да, удалить
+            </button>
+            <a href="{% url 'web:monitor_detail' monitor.pk %}" class="a-btn a-btn--ghost">
+                <i class="fa-regular fa-xmark"></i> Отмена
+            </a>
+        </form>
+
+        <p class="a-meta mt-4 mb-0">
+            <i class="fa-regular fa-clock me-1"></i> Это действие не может быть отменено
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var deleteForm = document.querySelector('form');
+        var deleteButton = deleteForm.querySelector('button[type="submit"]');
+
+        deleteButton.addEventListener('click', function (e) {
+            if (!confirm('Вы уверены, что хотите удалить монитор "{{ monitor.name }}"?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}

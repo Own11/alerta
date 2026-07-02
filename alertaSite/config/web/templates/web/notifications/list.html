@@ -1,0 +1,72 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Уведомления - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <div class="a-card__header mb-0">
+        <div>
+            <h1 class="a-page-header__title">
+                <i class="fa-regular fa-bell text-green"></i> Центр уведомлений
+                {% if notifications_count %}
+                <span class="a-badge a-badge--count">{{ notifications_count }}</span>
+                {% endif %}
+            </h1>
+            <p class="a-page-header__desc">Все оповещения о статусе мониторов и инцидентах</p>
+        </div>
+        {% if notifications %}
+        <a href="{% url 'web:notifications_read_all' %}" class="a-btn a-btn--soft-success a-btn--sm">
+            <i class="fa-regular fa-check-double"></i> Пометить все как прочитанные
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="a-card">
+    {% if not notifications %}
+    <div class="a-empty">
+        <div class="a-empty__icon"><i class="fa-regular fa-bell-slash"></i></div>
+        <p class="a-empty__title">У вас нет новых уведомлений</p>
+        <p class="a-empty__desc">Все уведомления будут отображаться здесь</p>
+    </div>
+    {% else %}
+    {% for n in notifications %}
+    <div class="a-notification-item{% if not n.is_read %} is-unread{% endif %}">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+            <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <h6 class="fw-bold mb-0">{{ n.title }}</h6>
+                    {% if not n.is_read %}
+                    <span class="a-badge a-badge--success">
+                        <span class="a-status-dot a-status-dot--up"></span> Новое
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="a-meta mb-2">{{ n.message }}</p>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span class="a-badge a-badge--muted">{{ n.get_type_display }}</span>
+                    <span class="a-meta">
+                        <i class="fa-regular fa-clock"></i> {{ n.created_at|date:"Y-m-d H:i:s" }}
+                    </span>
+                </div>
+            </div>
+
+            {% if not n.is_read %}
+            <a href="{% url 'web:notification_read' n.pk %}" class="a-btn a-btn--soft-success a-btn--sm flex-shrink-0">
+                <i class="fa-regular fa-check"></i> Прочитать
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="a-divider"></div>
+
+    <p class="a-meta text-center mb-0">
+        <i class="fa-regular fa-envelope"></i>
+        Непрочитанных: <strong class="text-green">{{ unread_count }}</strong>
+        из {{ notifications_count }}
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

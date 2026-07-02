@@ -1,0 +1,234 @@
+{% extends 'web/base.html' %}
+
+{% block title %}AI Ассистент - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">AI Ассистент</h1>
+    <p class="a-page-header__desc">Консультации по проблемам доступности и диагностике сбоев</p>
+</div>
+
+<div class="a-chat-layout">
+    <aside>
+        <div class="a-card mb-4">
+            <div class="a-card__header">
+                <h2 class="a-card__title">
+                    <i class="fa-regular fa-plus-circle"></i> Создать сессию
+                </h2>
+            </div>
+            <form method="post" action="{% url 'web:ai_chat_create_session' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="session-title" class="a-form-label">Название темы</label>
+                    <input type="text" name="title" id="session-title" class="a-form-control"
+                        placeholder="Например: Сбой DNS" required>
+                </div>
+                <div class="mb-3">
+                    <label for="session-monitor" class="a-form-label">Монитор</label>
+                    <select name="monitor_id" id="session-monitor" class="form-select">
+                        <option value="">Без привязки к монитору</option>
+                        {% for m in monitors %}
+                        <option value="{{ m.id }}">{{ m.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="a-btn a-btn--primary w-100">
+                    <i class="fa-regular fa-comment-plus"></i> Начать новый чат
+                </button>
+            </form>
+        </div>
+
+        <div class="a-card">
+            <div class="a-card__header">
+                <h2 class="a-card__title">
+                    <i class="fa-regular fa-clock"></i> История диалогов
+                </h2>
+                <span class="a-badge a-badge--count">{{ sessions_count }}</span>
+            </div>
+
+            {% if not sessions %}
+            <div class="a-empty py-3">
+                <div class="a-empty__icon"><i class="fa-regular fa-message"></i></div>
+                <p class="a-empty__desc mb-0">История пуста.</p>
+            </div>
+            {% else %}
+            <div class="a-session-list">
+                {% for s in sessions %}
+                <a href="?session_id={{ s.id }}"
+                    class="a-session-item{% if active_session and active_session.id == s.id %} is-active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div class="a-session-item__title">{{ s.title }}</div>
+                        <small class="a-meta flex-shrink-0">{{ s.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    {% if s.monitor %}
+                    <div class="a-meta mt-1">
+                        <i class="fa-regular fa-server me-1"></i> {{ s.monitor.name }}
+                    </div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+
+    <div class="a-card a-chat-panel">
+        {% if not active_session %}
+        <div class="a-empty m-auto">
+            <div class="a-empty__icon"><i class="fa-regular fa-robot"></i></div>
+            <p class="a-empty__title">AI Ассистент Alerta</p>
+            <p class="a-empty__desc">
+                Выберите существующий чат или создайте новый, чтобы проконсультироваться по проблемам доступности ваших сайтов.
+            </p>
+        </div>
+        {% else %}
+        <div class="a-card__header pb-0 mb-0">
+            <div>
+                <h2 class="a-card__title">
+                    <i class="fa-regular fa-message"></i> {{ active_session.title }}
+                </h2>
+                {% if active_session.monitor %}
+                <p class="a-card__subtitle">
+                    <i class="fa-regular fa-server me-1"></i> Привязан к: {{ active_session.monitor.name }}
+                </p>
+                {% endif %}
+            </div>
+            <span class="a-badge a-badge--muted" id="aiUsageBadge">
+                <i class="fa-regular fa-chart-simple me-1"></i> {{ ai_used_today }} / {{ ai_daily_limit }}
+            </span>
+        </div>
+
+        <div id="chatMessages" class="a-chat-messages my-3">
+            {% if not active_session.messages %}
+            <div class="a-empty py-4">
+                <div class="a-empty__icon"><i class="fa-regular fa-message"></i></div>
+                <p class="a-empty__desc mb-0">
+                    Отправьте сообщение, чтобы начать диалог. Наш ИИ поможет разобраться со сбоями.
+                </p>
+            </div>
+            {% else %}
+            {% for msg in active_session.messages %}
+            <div class="d-flex mb-3{% if msg.role == 'user' %} justify-content-end{% endif %}">
+                <div class="a-chat-bubble{% if msg.role == 'user' %} a-chat-bubble--user{% else %} a-chat-bubble--ai{% endif %}">
+                    <div class="a-chat-bubble__label{% if msg.role == 'user' %} text-accent{% else %} text-green{% endif %}">
+                        {% if msg.role == 'user' %}
+                        <i class="fa-regular fa-user me-1"></i> Вы
+                        {% else %}
+                        <i class="fa-regular fa-robot me-1"></i> ИИ Ассистент
+                        {% endif %}
+                    </div>
+                    <div>{% if msg.role == 'user' %}{{ msg.content|linebreaksbr }}{% else %}<span class="text-muted">{{ msg.content|linebreaksbr }}</span>{% endif %}</div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <form id="chatForm" class="a-chat-input-row">
+            <input type="text" id="messageInput" class="a-form-control"
+                placeholder="Задайте вопрос ИИ об ошибках, логах или хостинге..." required>
+            <button type="submit" id="sendBtn" class="a-btn a-btn--primary">
+                <i class="fa-regular fa-paper-plane"></i>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if active_session %}
+<script>
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    scrollToBottom();
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatMessage(text) {
+        return escapeHtml(text).replace(/\n/g, '<br>');
+    }
+
+    function appendBubble(role, labelIcon, labelText, content, extraClass) {
+        const alignClass = role === 'user' ? ' justify-content-end' : '';
+        const bubbleClass = role === 'user' ? 'a-chat-bubble--user' : 'a-chat-bubble--ai';
+        const labelClass = role === 'user' ? 'text-accent' : (extraClass || 'text-green');
+        const textClass = role === 'user' ? '' : 'text-muted';
+
+        chatMessages.insertAdjacentHTML('beforeend', `
+            <div class="d-flex mb-3${alignClass}">
+                <div class="a-chat-bubble ${bubbleClass}">
+                    <div class="a-chat-bubble__label ${labelClass}">
+                        <i class="${labelIcon} me-1"></i> ${labelText}
+                    </div>
+                    <div class="${textClass}">${content}</div>
+                </div>
+            </div>
+        `);
+    }
+
+    chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        appendBubble('user', 'fa-regular fa-user', 'Вы', formatMessage(text));
+        messageInput.value = '';
+        scrollToBottom();
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        fetch('/api/ai/{{ active_session.id }}/send_message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: text })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    appendBubble('ai', 'fa-regular fa-circle-exclamation', 'Ошибка', escapeHtml(data.error), 'text-danger');
+                } else {
+                    const lastMsg = data.messages[data.messages.length - 1];
+                    appendBubble('ai', 'fa-regular fa-robot', 'ИИ Ассистент', formatMessage(lastMsg.content));
+                }
+                scrollToBottom();
+            })
+            .catch(function () {
+                appendBubble(
+                    'ai',
+                    'fa-regular fa-circle-exclamation',
+                    'Ошибка соединения',
+                    'Не удалось отправить сообщение. Попробуйте позже.',
+                    'text-danger'
+                );
+                scrollToBottom();
+            })
+            .finally(function () {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fa-regular fa-paper-plane"></i>';
+            });
+    });
+
+    messageInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'web/base.html' %}
+
+{% block title %}{{ title }} - Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">{{ title }}</h1>
+    <p class="a-page-header__desc">
+        {% if 'Создать' in title or 'Добавить' in title %}
+        Добавьте новый монитор для отслеживания статуса сайта
+        {% else %}
+        Отредактируйте параметры монитора
+        {% endif %}
+    </p>
+</div>
+
+<div class="a-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if plan_limits %}
+        <p class="a-form-help mb-4">
+            <i class="fa-regular fa-circle-info me-1"></i>
+            Ваш тариф: мин. интервал проверки <strong>{{ plan_limits.min_interval }}</strong> сек.
+        </p>
+        {% endif %}
+
+        <div class="a-form-section">
+            <h2 class="a-form-section__title">
+                <i class="fa-regular fa-server"></i> Параметры монитора
+            </h2>
+
+            {% for field in form %}
+            <div class="mb-4">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="a-form-check">
+                    {{ field }}
+                    <label for="{{ field.id_for_label }}" class="a-form-label mb-0">
+                        {{ field.label }}
+                    </label>
+                </div>
+                {% if field.help_text %}
+                <p class="a-form-help"><i class="fa-regular fa-circle-info me-1"></i> {{ field.help_text }}</p>
+                {% endif %}
+                {% else %}
+                <label for="{{ field.id_for_label }}" class="a-form-label">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                    <span class="text-danger">*</span>
+                    {% endif %}
+                </label>
+
+                {% if field.field.widget.input_type == 'textarea' %}
+                <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="a-form-control" rows="4"
+                    {% if field.field.required %}required{% endif %}
+                    placeholder="Введите {{ field.label|lower }}">{{ field.value|default:'' }}</textarea>
+                {% elif field.field.choices %}
+                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select"
+                    {% if field.field.required %}required{% endif %}>
+                    {% for choice in field.field.choices %}
+                    <option value="{{ choice.0 }}" {% if field.value|stringformat:"s" == choice.0|stringformat:"s" %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% elif field.field.widget.input_type == 'url' %}
+                <input type="url" name="{{ field.name }}" id="{{ field.id_for_label }}" class="a-form-control"
+                    value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}
+                    placeholder="https://example.com">
+                {% elif field.field.widget.input_type == 'number' %}
+                <input type="number" name="{{ field.name }}" id="{{ field.id_for_label }}" class="a-form-control"
+                    value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}
+                    placeholder="Введите число">
+                {% else %}
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}"
+                    class="a-form-control"
+                    value="{{ field.value|default:'' }}" {% if field.field.required %}required{% endif %}
+                    placeholder="Введите {{ field.label|lower }}">
+                {% endif %}
+
+                {% if field.help_text %}
+                <p class="a-form-help"><i class="fa-regular fa-circle-info me-1"></i> {{ field.help_text }}</p>
+                {% endif %}
+                {% endif %}
+
+                {% if field.errors %}
+                <p class="a-form-error"><i class="fa-regular fa-circle-exclamation me-1"></i> {{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="a-divider"></div>
+        <div class="a-actions">
+            <button type="submit" class="a-btn a-btn--primary">
+                <i class="fa-regular fa-floppy-disk"></i> Сохранить
+            </button>
+            <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--ghost">
+                <i class="fa-regular fa-xmark"></i> Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var urlInput = document.querySelector('input[type="url"]');
+        if (urlInput) {
+            urlInput.addEventListener('blur', function () {
+                var value = this.value.trim();
+                if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                    this.value = 'https://' + value;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

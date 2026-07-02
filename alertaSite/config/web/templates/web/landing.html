@@ -1,0 +1,214 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Alerta — мониторинг сайтов и сервисов{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+
+{% block landing_content %}
+<section class="landing-hero" id="top">
+
+    <div class="landing-hero__badge">
+        <i class="fa-solid fa-satellite-dish"></i> Мониторинг 24/7 · Веб + Android
+    </div>
+
+    <h1 class="landing-hero__title">
+        Знайте о сбоях <span>раньше пользователей</span>
+    </h1>
+
+    <p class="landing-hero__desc">
+        Alerta отслеживает доступность сайтов, API и серверов. Мгновенные уведомления,
+        публичные status page и AI-помощник для разбора инцидентов.
+    </p>
+
+    <div class="a-actions justify-content-center mb-4">
+        {% if user.is_authenticated %}
+        <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--primary a-btn--lg">
+            <i class="fa-solid fa-gauge-high"></i> Панель управления
+        </a>
+        <a href="#download" class="a-btn a-btn--ghost a-btn--lg">
+            <i class="fa-brands fa-android"></i> Скачать APK
+        </a>
+        {% else %}
+        <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--lg">
+            <i class="fa-solid fa-rocket"></i> Начать бесплатно
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="landing-pills">
+        <span class="landing-pill"><i class="fa-solid fa-clock"></i> Проверки каждые 1–5 мин</span>
+        <span class="landing-pill"><i class="fa-solid fa-bell"></i> Email · Telegram · Push</span>
+        <span class="landing-pill"><i class="fa-solid fa-shield-halved"></i> SSL-мониторинг</span>
+    </div>
+</section>
+
+<section id="about" class="landing-section">
+    <div class="a-card">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <h2 class="landing-section__title text-start">Что такое Alerta?</h2>
+                <p class="text-muted mb-3">
+                    Создавайте проекты, добавляйте HTTP/ICMP/TCP мониторы, отслеживайте аптайм
+                    и реагируйте на инциденты из браузера или Android-приложения.
+                </p>
+                <p class="text-muted mb-0">
+                    AI-ассистент помогает анализировать сбои, REST API интегрируется с вашими
+                    инструментами, а публичные status page держат клиентов в курсе.
+                </p>
+            </div>
+            <div class="col-lg-5">
+                <div class="a-form-section mb-0">
+                    <h3 class="a-form-section__title"><i class="fa-solid fa-users"></i> Для кого</h3>
+                    <ul class="list-unstyled mb-0 text-muted">
+                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> DevOps и SRE</li>
+                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> Разработчики</li>
+                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> SaaS и e-commerce
+                        </li>
+                        <li><i class="fa-regular fa-circle-check text-green me-2"></i> Агентства</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="landing-section">
+    <div class="landing-section__header">
+        <h2 class="landing-section__title">Возможности</h2>
+        <p class="landing-section__desc">Всё для надёжного мониторинга — от проверок до AI и биллинга.</p>
+    </div>
+    <div class="landing-features">
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-solid fa-globe"></i></div>
+            <h3>Мультитип мониторинга</h3>
+            <p>HTTP/HTTPS, ICMP Ping и TCP-порты с настраиваемым интервалом.</p>
+        </div>
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-solid fa-folder-tree"></i></div>
+            <h3>Проекты</h3>
+            <p>Группируйте сервисы, ставьте мониторы на паузу, управляйте из одной панели.</p>
+        </div>
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-solid fa-bolt"></i></div>
+            <h3>Инциденты</h3>
+            <p>Автосоздание при падении, подтверждение и закрытие в интерфейсе.</p>
+        </div>
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-regular fa-bell"></i></div>
+            <h3>Уведомления</h3>
+            <p>Email, Telegram и push через Firebase.</p>
+        </div>
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-solid fa-lock"></i></div>
+            <h3>SSL</h3>
+            <p>Контроль срока сертификатов и предупреждения заранее.</p>
+        </div>
+        <div class="landing-feature">
+            <div class="landing-feature__icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3>AI-ассистент</h3>
+            <p>Анализ инцидентов и рекомендации по устранению.</p>
+        </div>
+    </div>
+</section>
+
+<section id="roadmap" class="landing-section">
+    <div class="landing-section__header">
+        <h2 class="landing-section__title">Roadmap</h2>
+        <p class="landing-section__desc">Ключевые этапы развития платформы.</p>
+    </div>
+    <div class="a-card">
+        <div class="landing-roadmap-item">
+            <div class="landing-roadmap-marker is-done"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <span class="a-badge a-badge--up mb-2">Готово</span>
+                <h5 class="fw-bold mb-1">Базовый мониторинг</h5>
+                <p class="text-muted mb-0 small">HTTP/ICMP/TCP, проекты, инциденты, дашборд.</p>
+            </div>
+        </div>
+        <div class="landing-roadmap-item">
+            <div class="landing-roadmap-marker is-done"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <span class="a-badge a-badge--up mb-2">Готово</span>
+                <h5 class="fw-bold mb-1">Уведомления и status page</h5>
+                <p class="text-muted mb-0 small">Email, Telegram, push и публичные страницы статуса.</p>
+            </div>
+        </div>
+        <div class="landing-roadmap-item">
+            <div class="landing-roadmap-marker">Q2</div>
+            <div>
+                <span class="a-badge a-badge--warn mb-2">В работе</span>
+                <h5 class="fw-bold mb-1">Android и REST API</h5>
+                <p class="text-muted mb-0 small">Flutter-клиент, JWT и API для интеграций.</p>
+            </div>
+        </div>
+        <div class="landing-roadmap-item">
+            <div class="landing-roadmap-marker is-planned">Q3</div>
+            <div>
+                <span class="a-badge a-badge--muted mb-2">Запланировано</span>
+                <h5 class="fw-bold mb-1">Команды и webhooks</h5>
+                <p class="text-muted mb-0 small">Роли, общие проекты, исходящие webhooks.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="download" class="landing-section pb-5">
+    <div class="a-card">
+        <div class="landing-section__header mb-4">
+            <h2 class="landing-section__title">Android-приложение</h2>
+            <p class="landing-section__desc">Сканируйте QR-код или скачайте APK напрямую.</p>
+        </div>
+        <div class="landing-download">
+            <div class="text-center">
+                {% if apk_available %}
+                <div class="landing-qr">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="landing-qr-caption"><i class="fa-brands fa-android"></i> Alerta Android</div>
+                {% else %}
+                <div class="a-empty py-4">
+                    <div class="a-empty__icon"><i class="fa-brands fa-android"></i></div>
+                    <p class="a-empty__desc mb-0">APK пока не загружен.<br>Файл:
+                        <code>web/static/downloads/alerta.apk</code>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <ul class="list-unstyled text-muted mb-4">
+                    <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> Flutter для Android</li>
+                    <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> Статус серверов в дороге
+                    </li>
+                    <li><i class="fa-regular fa-circle-check text-green me-2"></i> Синхронизация с аккаунтом</li>
+                </ul>
+                {% if apk_available %}
+                <a href="{% url 'web:download_apk' %}" class="a-btn a-btn--primary">
+                    <i class="fa-solid fa-download"></i> Скачать APK
+                </a>
+                {% else %}
+                <a href="{% if user.is_authenticated %}{% url 'web:dashboard' %}{% else %}{% url 'web:register' %}{% endif %}"
+                    class="a-btn a-btn--primary">
+                    {% if user.is_authenticated %}Панель управления{% else %}Начать в браузере{% endif %}
+                </a>
+                {% endif %}
+                <p class="a-meta mt-3 mb-0">Разрешите установку из неизвестных источников в настройках Android.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if apk_available %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    new QRCode(document.getElementById("qrcode"), {
+        text: "{{ apk_download_url|escapejs }}",
+        width: 180,
+        height: 180,
+        colorDark: "#18181b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
+</script>
+{% endif %}
+{% endblock %}

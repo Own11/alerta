@@ -1,0 +1,205 @@
+{% extends 'web/base.html' %}
+
+{% block title %}Панель управления — Alerta{% endblock %}
+
+{% block content %}
+<div class="a-page-header">
+    <h1 class="a-page-header__title">Панель управления</h1>
+    <p class="a-page-header__desc">Обзор состояния всех мониторов и активных инцидентов</p>
+</div>
+
+<div class="a-stat-grid">
+    <div class="a-stat">
+        <div class="a-stat__label"><i class="fa-solid fa-server"></i> Всего</div>
+        <div class="a-stat__value">{{ monitors_count|default:"0" }}</div>
+    </div>
+    <div class="a-stat a-stat--success">
+        <div class="a-stat__label"><i class="fa-solid fa-circle-check"></i> UP</div>
+        <div class="a-stat__value">{{ monitors_up|default:"0" }}</div>
+    </div>
+    <div class="a-stat a-stat--danger">
+        <div class="a-stat__label"><i class="fa-solid fa-circle-xmark"></i> DOWN</div>
+        <div class="a-stat__value">{{ monitors_down|default:"0" }}</div>
+    </div>
+    <div class="a-stat a-stat--neutral">
+        <div class="a-stat__label"><i class="fa-solid fa-pause"></i> Пауза</div>
+        <div class="a-stat__value">{{ monitors_paused|default:"0" }}</div>
+    </div>
+</div>
+
+{% if active_incidents_count %}
+<div class="a-card a-card--danger mb-4">
+    <div class="a-card__header">
+        <div>
+            <h2 class="a-card__title text-danger">
+                <i class="fa-solid fa-bolt"></i> Активные инциденты
+            </h2>
+        </div>
+        <span class="a-badge a-badge--danger">{{ active_incidents_count }}</span>
+    </div>
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Монитор</th>
+                    <th>Начало</th>
+                    <th>Причина</th>
+                    <th>Подтверждён</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in active_incidents %}
+                <tr>
+                    <td><strong class="text-green">{{ incident.monitor.name }}</strong></td>
+                    <td class="a-meta">{{ incident.started_at|date:"Y-m-d H:i:s" }}</td>
+                    <td class="text-danger">{{ incident.reason }}</td>
+                    <td>
+                        {% if incident.is_acknowledged %}
+                        <span class="a-badge a-badge--up"><i class="fa-regular fa-circle-check"></i> Да</span>
+                        {% else %}
+                        <span class="a-badge a-badge--warn"><i class="fa-regular fa-clock"></i> Нет</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="a-actions">
+                            {% if not incident.is_acknowledged %}
+                            <a href="{% url 'web:incident_acknowledge' incident.pk %}" class="a-btn a-btn--soft-warning a-btn--sm">
+                                <i class="fa-regular fa-handshake"></i> Подтвердить
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'web:incident_resolve' incident.pk %}" class="a-btn a-btn--soft-success a-btn--sm">
+                                <i class="fa-regular fa-circle-check"></i> Разрешить
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if project_groups %}
+{% for group in project_groups %}
+<div class="a-card mb-4">
+    <div class="a-card__header">
+        <h2 class="a-card__title">
+            <a href="{% url 'web:project_detail' group.project.pk %}" class="a-link text-decoration-none">
+                <i class="fa-regular fa-folder"></i> {{ group.project.name }}
+            </a>
+            <span class="a-badge a-badge--count">{{ group.monitor_count }}</span>
+        </h2>
+        <div class="a-meta">
+            <span class="text-green me-3"><i class="fa-solid fa-circle-check"></i> {{ group.up }} UP</span>
+            {% if group.down %}<span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> {{ group.down }} DOWN</span>{% endif %}
+        </div>
+    </div>
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Статус</th>
+                    <th>Монитор</th>
+                    <th>Интервал</th>
+                    <th class="text-center">Uptime</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for monitor in group.monitors %}
+                <tr>
+                    <td>
+                        {% if monitor.is_paused %}<span class="a-badge a-badge--muted">ПАУЗА</span>
+                        {% elif monitor.last_status == 'up' %}<span class="a-badge a-badge--up">UP</span>
+                        {% elif monitor.last_status == 'down' %}<span class="a-badge a-badge--down">DOWN</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td><a href="{% url 'web:monitor_detail' monitor.pk %}" class="a-link">{{ monitor.name }}</a></td>
+                    <td class="a-meta">{{ monitor.check_interval }}с</td>
+                    <td class="text-center fw-bold text-green">{{ monitor.uptime_percentage }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="a-card">
+    <div class="a-card__header">
+        <div>
+            <h2 class="a-card__title">
+                <i class="fa-solid fa-list-ul"></i> Все мониторы
+                {% if monitors_count %}<span class="a-badge a-badge--count">{{ monitors_count }}</span>{% endif %}
+            </h2>
+        </div>
+        <a href="{% url 'web:monitor_create' %}" class="a-btn a-btn--primary a-btn--sm">
+            <i class="fa-solid fa-plus"></i> Добавить
+        </a>
+    </div>
+
+    {% if not monitors %}
+    <div class="a-empty">
+        <div class="a-empty__icon"><i class="fa-regular fa-eye-slash"></i></div>
+        <p class="a-empty__title">Мониторов пока нет</p>
+        <p class="a-empty__desc">Создайте первый монитор, чтобы начать отслеживание доступности.</p>
+        <a href="{% url 'web:monitor_create' %}" class="a-btn a-btn--primary">
+            <i class="fa-solid fa-plus"></i> Добавить монитор
+        </a>
+    </div>
+    {% else %}
+    <div class="a-table-wrap">
+        <table class="a-table">
+            <thead>
+                <tr>
+                    <th>Статус</th>
+                    <th>Название</th>
+                    <th>URL</th>
+                    <th class="text-center">Интервал</th>
+                    <th class="text-center">Uptime</th>
+                    <th class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for monitor in monitors %}
+                <tr>
+                    <td>
+                        {% if monitor.is_paused %}
+                        <span class="a-badge a-badge--muted"><i class="fa-solid fa-pause"></i> ПАУЗА</span>
+                        {% elif monitor.last_status == 'up' %}
+                        <span class="a-badge a-badge--up"><span class="a-status-dot a-status-dot--up"></span> UP</span>
+                        {% elif monitor.last_status == 'down' %}
+                        <span class="a-badge a-badge--down"><span class="a-status-dot a-status-dot--down"></span> DOWN</span>
+                        {% else %}
+                        <span class="a-badge a-badge--warn">CHECKING</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'web:monitor_detail' monitor.pk %}" class="a-link fw-semibold">{{ monitor.name }}</a></td>
+                    <td class="a-meta">{{ monitor.url|truncatechars:40 }}</td>
+                    <td class="text-center a-meta">{{ monitor.check_interval|default:"60" }}с</td>
+                    <td class="text-center fw-bold {% if monitor.uptime_percentage >= 99 %}text-green{% elif monitor.uptime_percentage >= 95 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ monitor.uptime_percentage|default:"0" }}%
+                    </td>
+                    <td>
+                        <div class="a-actions justify-content-center">
+                            <a href="{% url 'web:monitor_toggle' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm" title="{% if monitor.is_paused %}Запустить{% else %}Пауза{% endif %}">
+                                <i class="fa-solid fa-{% if monitor.is_paused %}play{% else %}pause{% endif %}"></i>
+                            </a>
+                            <a href="{% url 'web:monitor_edit' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm" title="Редактировать">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                            <a href="{% url 'web:monitor_delete' monitor.pk %}" class="a-btn a-btn--soft-danger a-btn--sm" title="Удалить">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
