@@ -68,25 +68,7 @@ def logout_view(request):
 # ----------------- LANDING & DOWNLOADS -----------------
 
 def landing_view(request):
-    apk_download_url = request.build_absolute_uri(reverse('web:download_apk'))
-    apk_available = settings.ANDROID_APK_PATH.exists()
-    return render(request, 'web/landing.html', {
-        'apk_download_url': apk_download_url,
-        'apk_available': apk_available,
-    })
-
-
-def download_apk_view(request):
-    apk_path = settings.ANDROID_APK_PATH
-    if not apk_path.exists():
-        raise Http404('APK файл пока недоступен для скачивания.')
-
-    return FileResponse(
-        apk_path.open('rb'),
-        as_attachment=True,
-        filename=settings.ANDROID_APK_FILENAME,
-        content_type='application/vnd.android.package-archive',
-    )
+    return render(request, 'web/landing.html')
 
 
 # ----------------- DASHBOARD & PROFILE -----------------

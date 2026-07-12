@@ -11,7 +11,6 @@ urlpatterns = [
     
     # Landing & Downloads
     path('', views.landing_view, name='landing'),
-    path('download/android/', views.download_apk_view, name='download_apk'),
 
     # Dashboard & Profile
     path('dashboard/', views.dashboard_view, name='dashboard'),

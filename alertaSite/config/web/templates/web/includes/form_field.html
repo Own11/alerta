@@ -1,0 +1,22 @@
+<div class="a-field mb-4{% if field.field.widget.input_type == 'checkbox' %} a-field--checkbox{% endif %}">
+    {% if field.field.widget.input_type == 'checkbox' %}
+    <div class="form-check d-flex align-items-start gap-2">
+        {{ field }}
+        <label class="form-check-label a-form-label mb-0" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+    {% else %}
+    <label class="a-form-label" for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+    </label>
+    {{ field }}
+    {% endif %}
+
+    {% if field.help_text %}
+    <p class="a-form-help"><i class="fa-solid fa-circle-info me-1"></i>{{ field.help_text|safe }}</p>
+    {% endif %}
+
+    {% if field.errors %}
+    <p class="a-form-error" role="alert"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ field.errors.0 }}</p>
+    {% endif %}
+</div>
