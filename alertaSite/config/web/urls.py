@@ -15,6 +15,7 @@ urlpatterns = [
     # Dashboard & Profile
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('settings/', views.settings_view, name='settings'),
+    path('settings/telegram-link/', views.generate_telegram_token, name='generate_telegram_token'),
     
     # Projects CRUD
     path('projects/', views.projects_list, name='projects_list'),

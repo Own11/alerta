@@ -9,6 +9,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['username', 'email', 'plan', 'ai_used_today', 'ai_daily_limit', 'is_staff']
     list_filter = ['plan', 'is_staff', 'is_active']
     search_fields = ['username', 'email']
+    readonly_fields = ('last_ai_reset',)
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Тариф и AI', {
             'fields': ('plan', 'ai_daily_limit', 'ai_used_today', 'last_ai_reset')

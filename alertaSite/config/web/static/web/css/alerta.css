@@ -1,17 +1,18 @@
-/* Alerta Design System — Obsidian Control */
+/* Alerta Design System — Elegant Obsidian Control */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
     --a-bg: #000000;
-    --a-bg-elevated: #111111;
-    --a-surface: #111111;
-    --a-surface-hover: #1a1a1a;
-    --a-border: #333333;
-    --a-border-strong: #444444;
+    --a-bg-elevated: #0a0a0a;
+    --a-surface: rgba(25, 25, 25, 0.6);
+    --a-surface-hover: rgba(40, 40, 40, 0.8);
+    --a-border: rgba(255, 255, 255, 0.08);
+    --a-border-strong: rgba(255, 255, 255, 0.15);
 
     --a-accent: #ffffff;
     --a-accent-bright: #ffffff;
-    --a-accent-dim: #222222;
-    --a-accent-glow: rgba(255, 255, 255, 0.1);
+    --a-accent-dim: rgba(255, 255, 255, 0.1);
+    --a-accent-glow: rgba(255, 255, 255, 0.15);
 
     --a-success: #0070f3;
     --a-success-dim: rgba(0, 112, 243, 0.15);
@@ -36,6 +37,7 @@
     --a-sidebar-w: 260px;
     --a-topbar-h: 64px;
     --a-font: 'Inter', system-ui, sans-serif;
+    --a-font-serif: 'Playfair Display', serif;
     --a-mono: 'IBM Plex Mono', ui-monospace, monospace;
     --a-ease: ease;
 
@@ -136,21 +138,19 @@ body::before {
     gap: 0.75rem;
     text-decoration: none;
     color: var(--a-text);
-    font-weight: 800;
-    font-size: 1.5rem;
+    font-family: var(--a-font-serif);
+    font-weight: 500;
+    font-size: 1.75rem;
     letter-spacing: -0.02em;
 }
 
 .a-brand__icon {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     display: grid;
     place-items: center;
-    background: #818cf8;
-    border-radius: 14px;
     color: #fff;
     font-size: 1.25rem;
-    box-shadow: 0 4px 20px rgba(129, 140, 248, 0.4);
 }
 
 .a-brand__text {
@@ -274,16 +274,20 @@ body::before {
 .a-card,
 .glass-card {
     background: var(--a-bg-elevated);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--a-border);
     border-radius: var(--a-radius-lg);
     padding: 1.5rem;
-    transition: all 0.2s var(--a-ease);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .a-card:hover,
 .glass-card:hover {
-    border-color: var(--a-border-strong);
-    transform: translateY(-1px);
+    border-color: var(--a-accent-glow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px rgba(129, 140, 248, 0.15);
 }
 
 .a-card--flush { padding: 0; overflow: hidden; }
@@ -413,28 +417,28 @@ body::before {
 
 .a-btn--primary,
 .btn-gradient {
-    background: #ededed;
-    color: #000;
+    background: #ffffff;
+    color: #000000;
 }
 
 .a-btn--primary:hover,
 .btn-gradient:hover {
-    background: #ffffff;
-    color: #000;
+    background: #e5e5e5;
+    color: #000000;
 }
 
 .a-btn--ghost,
 .btn-outline-green {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--a-border-strong);
-    color: var(--a-text-secondary);
+    color: var(--a-text);
 }
 
 .a-btn--ghost:hover,
 .btn-outline-green:hover {
-    background: var(--a-surface-hover);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--a-text);
-    border-color: var(--a-border-strong);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .a-btn--soft-success {

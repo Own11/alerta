@@ -4,109 +4,30 @@
 {% block body_class %}landing-page{% endblock %}
 
 {% block landing_content %}
-<section class="landing-hero" id="top">
-
-    <h1 class="landing-hero__title">
-        Знайте о сбоях <span>раньше пользователей</span>
-    </h1>
-
-    <p class="landing-hero__desc">
-        Alerta отслеживает доступность сайтов, API и серверов. Мгновенные уведомления,
-        публичные status page и AI-помощник для разбора инцидентов.
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; max-width: 800px; margin: 0 auto; padding-top: 10vh;">
+    <h1 style="font-family: var(--a-font-serif); font-size: 5rem; font-weight: 500; margin-bottom: 2rem; color: #ffffff; letter-spacing: -0.03em;">Alerta</h1>
+    
+    <p style="font-size: 1.25rem; color: var(--a-text-secondary); line-height: 1.6; font-weight: 400; margin-bottom: 3rem; max-width: 650px;">
+        Следите за доступностью, предотвращайте сбои и побеждайте в надежности своих серверов и API.
     </p>
 
-    <div class="a-actions justify-content-center mb-4">
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: center; margin-bottom: 3rem;">
         {% if user.is_authenticated %}
-        <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--primary a-btn--lg">
-            <i class="fa-solid fa-gauge-high"></i> Панель управления
+        <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--primary a-btn--lg" style="padding: 1rem 2rem; font-size: 1rem; border-radius: 8px;">
+            <i class="fa-solid fa-gauge-high"></i> Подключить проект
         </a>
         {% else %}
-        <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--lg">
-            <i class="fa-solid fa-rocket"></i> Начать бесплатно
+        <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--lg" style="padding: 1rem 2rem; font-size: 1rem; border-radius: 8px;">
+            <i class="fa-solid fa-rocket"></i> Подключить проект
         </a>
         {% endif %}
+        <a href="{% url 'web:pricing' %}" class="a-btn a-btn--ghost a-btn--lg" style="padding: 1rem 2rem; font-size: 1rem; border-radius: 8px; border-color: rgba(255,255,255,0.15);">
+            Смотреть тарифы ↗
+        </a>
     </div>
 
-    <div class="landing-pills">
-        <span class="landing-pill"><i class="fa-solid fa-clock"></i> Проверки каждые 1–5 мин</span>
-        <span class="landing-pill"><i class="fa-solid fa-bell"></i> Email · Telegram · Push</span>
-        <span class="landing-pill"><i class="fa-solid fa-shield-halved"></i> SSL-мониторинг</span>
-    </div>
-</section>
-
-<section id="about" class="landing-section">
-    <div class="a-card">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-7">
-                <h2 class="landing-section__title text-start">Что такое Alerta?</h2>
-                <p class="text-muted mb-3">
-                    Создавайте проекты, добавляйте HTTP/ICMP/TCP мониторы, отслеживайте аптайм
-                    и реагируйте на инциденты из браузера или Android-приложения.
-                </p>
-                <p class="text-muted mb-0">
-                    AI-ассистент помогает анализировать сбои, REST API интегрируется с вашими
-                    инструментами, а публичные status page держат клиентов в курсе.
-                </p>
-            </div>
-            <div class="col-lg-5">
-                <div class="a-form-section mb-0">
-                    <h3 class="a-form-section__title"><i class="fa-solid fa-users"></i> Для кого</h3>
-                    <ul class="list-unstyled mb-0 text-muted">
-                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> DevOps и SRE</li>
-                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> Разработчики</li>
-                        <li class="mb-2"><i class="fa-regular fa-circle-check text-green me-2"></i> SaaS и e-commerce
-                        </li>
-                        <li><i class="fa-regular fa-circle-check text-green me-2"></i> Агентства</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="features" class="landing-section">
-    <div class="landing-section__header">
-        <h2 class="landing-section__title">Возможности</h2>
-        <p class="landing-section__desc">Всё для надёжного мониторинга — от проверок до AI и биллинга.</p>
-    </div>
-    <div class="landing-features">
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-solid fa-globe"></i></div>
-            <h3>Мультитип мониторинга</h3>
-            <p>HTTP/HTTPS, ICMP Ping и TCP-порты с настраиваемым интервалом.</p>
-        </div>
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-solid fa-folder-tree"></i></div>
-            <h3>Проекты</h3>
-            <p>Группируйте сервисы, ставьте мониторы на паузу, управляйте из одной панели.</p>
-        </div>
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-solid fa-bolt"></i></div>
-            <h3>Инциденты</h3>
-            <p>Автосоздание при падении, подтверждение и закрытие в интерфейсе.</p>
-        </div>
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-regular fa-bell"></i></div>
-            <h3>Уведомления</h3>
-            <p>Email, Telegram и push через Firebase.</p>
-        </div>
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-solid fa-lock"></i></div>
-            <h3>SSL</h3>
-            <p>Контроль срока сертификатов и предупреждения заранее.</p>
-        </div>
-        <div class="landing-feature">
-            <div class="landing-feature__icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h3>AI-ассистент</h3>
-            <p>Анализ инцидентов и рекомендации по устранению.</p>
-        </div>
-    </div>
-</section>
-
-<footer class="landing-footer">
-    <div class="text-center text-muted py-5 mt-5 border-top border-dark">
-        &copy; 2026 Alerta Inc. Все права защищены.
-    </div>
-</footer>
-
+    <p style="font-size: 0.95rem; color: var(--a-text-muted);">
+        Доступно для всех современных сервисов и IT-компаний.
+    </p>
+</div>
 {% endblock %}

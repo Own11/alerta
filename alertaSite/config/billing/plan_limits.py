@@ -8,6 +8,11 @@ PLAN_LIMITS = {
         'default_interval': 300,
         'reports_enabled': False,
         'ai_daily_limit': 0,
+        'ai_rca_enabled': False,
+        'latency_radar': False,
+        'status_page_whitelabel': False,
+        'post_mortem_enabled': False,
+        'chaos_mode_enabled': False,
     },
     'pro': {
         'max_monitors': 50,
@@ -16,6 +21,11 @@ PLAN_LIMITS = {
         'default_interval': 60,
         'reports_enabled': True,
         'ai_daily_limit': 50,
+        'ai_rca_enabled': True,
+        'latency_radar': True,
+        'status_page_whitelabel': True,
+        'post_mortem_enabled': False,
+        'chaos_mode_enabled': False,
     },
     'business': {
         'max_monitors': 200,
@@ -24,6 +34,11 @@ PLAN_LIMITS = {
         'default_interval': 30,
         'reports_enabled': True,
         'ai_daily_limit': 500,
+        'ai_rca_enabled': True,
+        'latency_radar': True,
+        'status_page_whitelabel': True,
+        'post_mortem_enabled': True,
+        'chaos_mode_enabled': True,
     },
 }
 

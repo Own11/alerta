@@ -19,6 +19,8 @@ from ai_assistant.models import AIChatSession
 from billing.models import Subscription
 from django.conf import settings
 from .forms import LoginForm, RegisterForm, ProjectForm, MonitorForm
+import uuid
+from django.db import connection
 
 # ----------------- AUTHENTICATION -----------------
 
@@ -145,6 +147,29 @@ def settings_view(request):
         'plan_limits': plan_limits,
         'effective_plan': get_effective_plan(user),
     })
+
+@login_required
+def generate_telegram_token(request):
+    user = request.user
+    if not user.profile_id:
+        messages.error(request, "Ошибка: не найден профиль Supabase для привязки.")
+        return redirect('web:settings')
+        
+    token = str(uuid.uuid4())
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO public.bot_auth_tokens (token, profile_id)
+                VALUES (%s, %s)
+                """,
+                [token, str(user.profile_id)]
+            )
+        bot_username = "AlertaMonitorBot" # Замените на имя вашего бота
+        return redirect(f"https://t.me/{bot_username}?start={token}")
+    except Exception as e:
+        messages.error(request, f"Ошибка при генерации токена: {e}")
+        return redirect('web:settings')
 
 
 @login_required

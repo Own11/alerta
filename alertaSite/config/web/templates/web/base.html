@@ -25,11 +25,13 @@
     <div
         class="a-app{% if not user.is_authenticated and request.resolver_match.url_name != 'landing' %} a-app--auth{% endif %}">
 
-        <header class="a-topbar">
+        <header class="a-topbar"
+            style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 3rem; height: 80px;">
             <a class="a-brand"
-                href="{% if user.is_authenticated %}{% url 'web:dashboard' %}{% else %}{% url 'web:landing' %}{% endif %}">
-                <span class="a-brand__icon"><i class="fa-solid fa-signal"></i></span>
-                <span class="a-brand__text">Alerta</span>
+                href="{% if user.is_authenticated %}{% url 'web:dashboard' %}{% else %}{% url 'web:landing' %}{% endif %}"
+                style="font-size: 2.2rem; font-weight: 600;">
+                <span style="font-weight: 300; opacity: 0.8; margin-right: 0.2rem;">$</span><span
+                    class="a-brand__text">Alerta</span>
             </a>
 
             <div class="a-topbar__actions">
@@ -50,15 +52,15 @@
                 </a>
                 {% elif request.resolver_match.url_name == 'landing' %}
                 {% if user.is_authenticated %}
-                <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--primary a-btn--sm">
-                    <i class="fa-solid fa-chart-simple"></i> Панель
-                </a>
+                <a href="{% url 'web:dashboard' %}" class="a-btn a-btn--ghost a-btn--sm"
+                    style="border: none;">Профиль</a>
+                <a href="{% url 'web:logout' %}" class="a-btn a-btn--primary a-btn--sm">Выйти</a>
                 {% else %}
-                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm">Вход</a>
+                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm" style="border: none;">Вход</a>
                 <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--sm">Регистрация</a>
                 {% endif %}
                 {% else %}
-                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm">Вход</a>
+                <a href="{% url 'web:login' %}" class="a-btn a-btn--ghost a-btn--sm" style="border: none;">Вход</a>
                 <a href="{% url 'web:register' %}" class="a-btn a-btn--primary a-btn--sm">Регистрация</a>
                 {% endif %}
             </div>

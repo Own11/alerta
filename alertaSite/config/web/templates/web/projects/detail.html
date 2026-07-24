@@ -21,8 +21,12 @@
                 <i class="fa-regular fa-pen-to-square"></i> Редактировать
             </a>
             {% if project.status_page_enabled %}
-            <a href="{% url 'web:status_page' project.slug %}" target="_blank" class="a-btn a-btn--ghost a-btn--sm">
+            <a href="{% url 'web:status_page' project.slug %}" target="_blank" class="a-btn a-btn--soft-success a-btn--sm">
                 <i class="fa-regular fa-globe"></i> Статус-страница
+            </a>
+            {% else %}
+            <a href="#" class="a-btn a-btn--soft-success a-btn--sm" onclick="alert('Генерация Public Status Page... (White-label для тарифов Pro/Business)'); return false;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Создать Status Page
             </a>
             {% endif %}
         </div>

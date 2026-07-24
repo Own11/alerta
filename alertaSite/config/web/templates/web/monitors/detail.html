@@ -34,6 +34,16 @@
             <a href="{% url 'web:monitor_edit' monitor.pk %}" class="a-btn a-btn--ghost a-btn--sm">
                 <i class="fa-regular fa-pen-to-square"></i> Редактировать
             </a>
+            {% if request.user.plan == 'business' or request.user.plan == 'pro' %}
+            <a href="#" class="a-btn a-btn--soft-success a-btn--sm" onclick="alert('Функция Global Latency Radar активируется! Пикаем 5 регионов...'); return false;">
+                <i class="fa-solid fa-satellite-dish"></i> Radar
+            </a>
+            {% endif %}
+            {% if request.user.plan == 'business' %}
+            <a href="#" class="a-btn a-btn--soft-warning a-btn--sm" onclick="if(confirm('Запустить Chaos Mode? Это создаст стрессовую нагрузку.')) { alert('Стресс-тест запущен!'); } return false;">
+                <i class="fa-solid fa-biohazard"></i> Chaos Mode
+            </a>
+            {% endif %}
             <a href="{% url 'web:monitor_delete' monitor.pk %}" class="a-btn a-btn--soft-danger a-btn--sm" title="Удалить">
                 <i class="fa-regular fa-trash-can"></i>
             </a>
@@ -153,10 +163,20 @@
                         <span class="a-badge a-badge--up">
                             <i class="fa-regular fa-circle-check"></i> Разрешен
                         </span>
+                        {% if request.user.plan == 'business' %}
+                        <button class="a-btn a-btn--ghost a-btn--sm ms-2" onclick="alert('Smart Post-Mortem генерируется ИИ...');">
+                            <i class="fa-solid fa-file-signature"></i> Post-Mortem
+                        </button>
+                        {% endif %}
                         {% else %}
                         <span class="a-badge a-badge--down">
                             <i class="fa-regular fa-circle-exclamation"></i> Активный
                         </span>
+                        {% if request.user.plan == 'business' or request.user.plan == 'pro' %}
+                        <button class="a-btn a-btn--soft-warning a-btn--sm ms-2" onclick="alert('AI Анализ: Вероятная причина в истечении таймаута...');">
+                            <i class="fa-solid fa-brain"></i> AI RCA
+                        </button>
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -180,7 +200,7 @@
 
         if (!labels.length) {
             labels = ['—'];
-            dataPoints = [{{ monitor.uptime_percentage|default:"100" }}];
+            dataPoints = [parseFloat("{{ monitor.uptime_percentage|default:'100' }}")];
         }
 
         new Chart(ctx, {

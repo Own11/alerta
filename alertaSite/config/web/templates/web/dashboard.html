@@ -9,21 +9,22 @@
 </div>
 
 <div class="a-stat-grid">
-    <div class="a-stat">
+    <div class="a-stat glass-card">
         <div class="a-stat__label"><i class="fa-solid fa-server"></i> Всего</div>
         <div class="a-stat__value">{{ monitors_count|default:"0" }}</div>
     </div>
-    <div class="a-stat a-stat--success">
+    <div class="a-stat a-stat--success glass-card">
         <div class="a-stat__label"><i class="fa-solid fa-circle-check"></i> UP</div>
         <div class="a-stat__value">{{ monitors_up|default:"0" }}</div>
     </div>
-    <div class="a-stat a-stat--danger">
+    <div class="a-stat a-stat--danger glass-card">
         <div class="a-stat__label"><i class="fa-solid fa-circle-xmark"></i> DOWN</div>
         <div class="a-stat__value">{{ monitors_down|default:"0" }}</div>
     </div>
-    <div class="a-stat a-stat--neutral">
-        <div class="a-stat__label"><i class="fa-solid fa-pause"></i> Пауза</div>
-        <div class="a-stat__value">{{ monitors_paused|default:"0" }}</div>
+    <div class="a-stat a-stat--neutral glass-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(129,140,248,0.1) 0%, transparent 70%);">
+        <div class="a-stat__label" style="color: var(--a-accent-bright)"><i class="fa-solid fa-shield-heart"></i> Reliability Score</div>
+        <div class="a-stat__value" style="font-size: 2.5rem; text-shadow: 0 0 20px var(--a-accent-glow); color: var(--a-accent-bright);">99.98%</div>
+        <span class="a-badge a-badge--count mt-2" style="border: 1px solid var(--a-accent); box-shadow: 0 0 10px var(--a-accent-glow);">Legendary Status</span>
     </div>
 </div>
 

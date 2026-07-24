@@ -71,10 +71,13 @@
             </h2>
             <p class="a-meta">
                 <i class="fa-regular fa-circle-info me-1"></i>
-                Напишите нашему боту <code class="a-badge a-badge--count">@AlertaMonitorBot</code>
-                команду <code class="a-badge a-badge--count">/start</code>,
-                чтобы получить ваш Chat ID, и вставьте его ниже.
+                Вы можете привязать аккаунт к нашему боту в один клик или ввести Chat ID вручную.
             </p>
+            <div class="mb-3">
+                <a href="{% url 'web:generate_telegram_token' %}" target="_blank" class="a-btn a-btn--soft-success">
+                    <i class="fa-brands fa-telegram"></i> Привязать через Telegram Бота
+                </a>
+            </div>
             <label class="a-form-label" for="telegram_chat_id">
                 <i class="fa-regular fa-id-card me-1"></i> Telegram Chat ID
             </label>

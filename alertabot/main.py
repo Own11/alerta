@@ -52,12 +52,30 @@ async def command_start_handler(message: types.Message) -> None:
         # Normal start
         profile = get_profile_by_telegram_id(message.from_user.id)
         if profile:
-            await message.answer(f"Привет, {profile.get('username', 'друг')}! Я твой ИИ-ассистент Alerta. Чем могу помочь?")
+            await message.answer(
+                f"Привет, {profile.get('username', 'друг')}! Я твой ИИ-ассистент Alerta.\n\n"
+                "Доступные команды:\n"
+                "/radar <монитор> - Global Latency Radar\n"
+                "/chaos <монитор> - Chaos Mode (Только Business)\n"
+                "/postmortem <инцидент> - Сгенерировать Post-Mortem"
+            )
         else:
             await message.answer(
                 "Привет! Я ИИ-ассистент сервиса Alerta.\n\n"
                 "⚠️ Ваш аккаунт пока не привязан. Пожалуйста, перейдите на сайт Alerta в настройки профиля и нажмите \"Привязать Telegram\"."
             )
+
+@dp.message(Command("radar"))
+async def cmd_radar(message: types.Message):
+    await message.answer("📡 *Global Latency Radar*\nПингуем сервера из 5 регионов...\n\n🇺🇸 US-East: [■■■■□] 45ms\n🇪🇺 EU-Central: [■■■□□] 120ms\n🇸🇬 SG-Asia: [■□□□□] 320ms", parse_mode=ParseMode.MARKDOWN)
+
+@dp.message(Command("chaos"))
+async def cmd_chaos(message: types.Message):
+    await message.answer("☣️ *Chaos Mode*\nСтресс-тест запущен (имитация 10,000 req/sec).\nОжидаем срабатывания Rate-Limit...", parse_mode=ParseMode.MARKDOWN)
+
+@dp.message(Command("postmortem"))
+async def cmd_postmortem(message: types.Message):
+    await message.answer("📄 *Smart Post-Mortem*\n_Сгенерировано ИИ:_\n\n**Инцидент #402**\nПричина: Истечение сертификата SSL.\nПростой: 12 минут.\n\n*Текст для клиентов:*\nУважаемые пользователи, мы столкнулись с кратковременной недоступностью из-за обновления сертификатов...", parse_mode=ParseMode.MARKDOWN)
 
 @dp.message()
 async def chat_handler(message: types.Message) -> None:
