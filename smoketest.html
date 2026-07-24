@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta - Очередь раннего доступа</title>
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --a-bg: #000000;
+            --a-bg-elevated: #0a0a0a;
+            --a-surface: rgba(25, 25, 25, 0.6);
+            --a-border: rgba(255, 255, 255, 0.08);
+            --a-border-strong: rgba(255, 255, 255, 0.15);
+            --a-accent: #ffffff;
+            --a-text: #ededed;
+            --a-text-secondary: #a0a0a0;
+            --a-text-muted: #888888;
+            --a-font: 'Inter', system-ui, sans-serif;
+            --a-font-serif: 'Playfair Display', serif;
+            --a-radius-sm: 4px;
+            --a-radius-lg: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--a-font);
+        }
+
+        body {
+            background-color: var(--a-bg);
+            color: var(--a-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Subtle Background Gradient for Depth */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            padding: 2rem;
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* Logo Area */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .logo-text {
+            font-family: var(--a-font-serif);
+            font-size: 4rem;
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: var(--a-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 3.5rem;
+            padding: 0 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Form Area */
+        .waitlist-form {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .email-input {
+            flex: 1;
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--a-radius-sm);
+            border: 1px solid var(--a-border);
+            background-color: var(--a-bg-elevated);
+            color: var(--a-text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .email-input::placeholder {
+            color: var(--a-text-muted);
+        }
+
+        .email-input:focus {
+            border-color: var(--a-accent);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            border-radius: var(--a-radius-sm);
+            border: none;
+            background-color: var(--a-accent);
+            color: #000000;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .submit-btn:hover {
+            background-color: #e5e5e5;
+        }
+
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 5rem;
+            border-top: 1px solid var(--a-border);
+            padding-top: 1.5rem;
+            width: 100%;
+            color: var(--a-text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo-text {
+                font-size: 3rem;
+            }
+
+            .waitlist-form {
+                flex-direction: column;
+            }
+
+            .submit-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo-text">Alerta</div>
+        </div>
+
+        <h1>
+            Следите за доступностью, предотвращайте сбои и побеждайте в надежности своих серверов и API. Присоединяйтесь
+            к закрытому тестированию.
+        </h1>
+
+        <form class="waitlist-form"
+            onsubmit="event.preventDefault(); alert('Вы успешно добавлены в список ожидания!');">
+            <input type="email" class="email-input" placeholder="you@example.com" required>
+            <button type="submit" class="submit-btn">
+                <i class="fa-solid fa-rocket"></i> Присоединиться
+            </button>
+        </form>
+
+        <div class="footer">
+            &copy; 2026 Alerta. Все права защищены.
+        </div>
+    </div>
+</body>
+
+</html>
