@@ -155,6 +155,111 @@
             transform: translateY(1px);
         }
 
+        .submit-btn.loading {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .submit-btn.loading .fa-rocket {
+            display: none;
+        }
+
+        .submit-btn.loading::before {
+            content: "\f110"; /* fa-spinner */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            animation: spin 1s linear infinite;
+        }
+
+        .submit-btn.success {
+            background-color: #22c55e;
+            color: #ffffff;
+            pointer-events: none;
+        }
+
+        .submit-btn.success .fa-rocket {
+            display: none;
+        }
+
+        .submit-btn.success::before {
+            content: "\f00c"; /* fa-check */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Message Overlay */
+        .success-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            z-index: 100;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .success-modal {
+            background: var(--a-bg-elevated);
+            border: 1px solid var(--a-border-strong);
+            padding: 3rem 2rem;
+            border-radius: var(--a-radius-lg);
+            text-align: center;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .success-overlay.show .success-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .success-modal i {
+            font-size: 3.5rem;
+            color: #22c55e;
+            margin-bottom: 1.5rem;
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-modal h2 {
+            font-size: 1.75rem;
+            color: var(--a-accent);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .success-modal p {
+            color: var(--a-text-secondary);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
         /* Footer */
         .footer {
             margin-top: 5rem;
@@ -193,18 +298,78 @@
             к закрытому тестированию.
         </h1>
 
-        <form class="waitlist-form"
-            onsubmit="event.preventDefault(); alert('Вы успешно добавлены в список ожидания!');">
+        <form class="waitlist-form" id="waitlistForm">
             <input type="email" class="email-input" placeholder="you@example.com" required>
-            <button type="submit" class="submit-btn">
-                <i class="fa-solid fa-rocket"></i> Присоединиться
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fa-solid fa-rocket"></i> <span>Присоединиться</span>
             </button>
         </form>
+
+        <div class="success-overlay" id="successOverlay">
+            <div class="success-modal">
+                <i class="fa-solid fa-circle-check"></i>
+                <h2>Вы в списке!</h2>
+                <p>Мы уведомим вас, как только Alerta будет готова к использованию.</p>
+            </div>
+        </div>
 
         <div class="footer">
             &copy; 2026 Alerta. Все права защищены.
         </div>
     </div>
+
+    <script>
+        const form = document.getElementById('waitlistForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('span');
+        const successOverlay = document.getElementById('successOverlay');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Loading state
+            submitBtn.classList.add('loading');
+            btnText.textContent = 'Обработка...';
+            
+            // Simulate API request delay
+            setTimeout(() => {
+                // Success state
+                submitBtn.classList.remove('loading');
+                submitBtn.classList.add('success');
+                btnText.textContent = 'Успешно';
+                
+                // Show modal
+                setTimeout(() => {
+                    successOverlay.classList.add('show');
+                    
+                    // Auto-close modal and reset form
+                    setTimeout(() => {
+                        successOverlay.classList.remove('show');
+                        
+                        setTimeout(() => {
+                            submitBtn.classList.remove('success');
+                            btnText.textContent = 'Присоединиться';
+                            form.reset();
+                        }, 400); // Wait for modal fade out
+                        
+                    }, 3500);
+                }, 400);
+                
+            }, 1200);
+        });
+
+        // Allow closing modal manually
+        successOverlay.addEventListener('click', (e) => {
+            if (e.target === successOverlay) {
+                successOverlay.classList.remove('show');
+                setTimeout(() => {
+                    submitBtn.classList.remove('success');
+                    btnText.textContent = 'Присоединиться';
+                    form.reset();
+                }, 400);
+            }
+        });
+    </script>
 </body>
 
 </html>
