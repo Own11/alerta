@@ -1,16 +1,16 @@
-import stripe
+import json
 from django.conf import settings
 from django.http import HttpResponse
-from django.utils import timezone
 from rest_framework import views, permissions, status
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from standardwebhooks.webhooks import Webhook
+from polar_sdk import Polar
+
 from .models import Subscription
-from .subscription_utils import sync_subscription_from_stripe, create_customer_portal_session
+from .subscription_utils import sync_subscription_from_polar, create_customer_portal_session, get_polar_client
 
 User = get_user_model()
-stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
-
 
 class CreateCheckoutSessionView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -20,28 +20,29 @@ class CreateCheckoutSessionView(views.APIView):
         if plan_type not in ['pro', 'business']:
             return Response({"error": "Неверный тарифный план."}, status=status.HTTP_400_BAD_REQUEST)
 
-        price_id = getattr(settings, f'STRIPE_{plan_type.upper()}_PRICE_ID', '')
+        price_id = getattr(settings, f'POLAR_{plan_type.upper()}_PRODUCT_ID', '')
         if not price_id or price_id.endswith('_dummy'):
             return Response(
-                {"error": "Stripe не настроен. Укажите STRIPE_* ключи в settings или .env."},
+                {"error": "Polar не настроен. Укажите POLAR_* ключи в settings или .env."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
+
+        client = get_polar_client()
+        if not client:
+             return Response({"error": "Polar клиент не настроен."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         sub, _ = Subscription.objects.get_or_create(user=request.user)
         domain_url = request.build_absolute_uri('/')[:-1]
 
         try:
-            checkout_session = stripe.checkout.Session.create(
-                customer=sub.stripe_customer_id or None,
-                customer_email=None if sub.stripe_customer_id else request.user.email,
-                payment_method_types=['card'],
-                line_items=[{'price': price_id, 'quantity': 1}],
-                mode='subscription',
+            # Polar API allows creating checkouts
+            checkout = client.checkouts.create(
+                product_id=price_id,
+                customer_email=None if sub.polar_customer_id else request.user.email,
                 success_url=domain_url + '/billing/success/?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=domain_url + '/billing/cancel/',
                 metadata={'user_id': str(request.user.id), 'plan': plan_type},
             )
-            return Response({'sessionId': checkout_session.id, 'url': checkout_session.url})
+            return Response({'sessionId': checkout.id, 'url': checkout.url})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -54,52 +55,50 @@ class CustomerPortalView(views.APIView):
         url = create_customer_portal_session(request.user, return_url)
         if not url:
             return Response(
-                {"error": "Портал управления подпиской недоступен. Оформите подписку или настройте Stripe."},
+                {"error": "Портал управления подпиской недоступен. Оформите подписку или настройте Polar."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         return Response({'url': url})
 
 
-class StripeWebhookView(views.APIView):
+class PolarWebhookView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         payload = request.body
-        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
-        endpoint_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
+        sig_headers = {
+            'webhook-id': request.headers.get('webhook-id'),
+            'webhook-timestamp': request.headers.get('webhook-timestamp'),
+            'webhook-signature': request.headers.get('webhook-signature')
+        }
+        
+        endpoint_secret = getattr(settings, 'POLAR_WEBHOOK_SECRET', '')
 
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-        except (ValueError, stripe.error.SignatureVerificationError):
+            wh = Webhook(endpoint_secret)
+            wh.verify(payload, sig_headers)
+        except Exception:
             return HttpResponse(status=400)
 
-        if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-            user_id = session.get('metadata', {}).get('user_id')
-            plan = session.get('metadata', {}).get('plan')
-            customer_id = session.get('customer')
-            subscription_id = session.get('subscription')
+        data = json.loads(payload)
+        event_type = data.get('type')
+        event_data = data.get('data', {})
 
-            if user_id and plan:
-                try:
-                    user = User.objects.get(id=user_id)
-                    user.plan = plan
-                    user.save()
-
-                    sub, _ = Subscription.objects.get_or_create(user=user)
-                    sub.stripe_customer_id = customer_id
-                    sub.stripe_subscription_id = subscription_id
-                    sub.status = 'active'
-                    sub.stripe_price_id = getattr(settings, f'STRIPE_{plan.upper()}_PRICE_ID', '')
-                    sub.save()
-
-                    if subscription_id:
-                        sync_subscription_from_stripe(subscription_id)
-                except User.DoesNotExist:
-                    pass
-
-        elif event['type'] in ['customer.subscription.updated', 'customer.subscription.deleted']:
-            subscription = event['data']['object']
-            sync_subscription_from_stripe(subscription.get('id'))
+        if event_type == 'subscription.created':
+            # Handle new subscription
+            user_id = event_data.get('metadata', {}).get('user_id')
+            plan = event_data.get('metadata', {}).get('plan')
+            customer_id = event_data.get('customer_id')
+            subscription_id = event_data.get('id')
+            
+            # Subscriptions don't necessarily have plan in metadata if checkout metadata didn't pass it over,
+            # but assuming it did or we sync it later via sync_subscription_from_polar
+            if subscription_id:
+                 sync_subscription_from_polar(subscription_id)
+                 
+        elif event_type in ['subscription.updated', 'subscription.active', 'subscription.canceled', 'subscription.revoked']:
+            subscription_id = event_data.get('id')
+            if subscription_id:
+                sync_subscription_from_polar(subscription_id)
 
         return HttpResponse(status=200)

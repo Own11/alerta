@@ -11,7 +11,7 @@ from django.http import JsonResponse, FileResponse, Http404
 from accounts.models import User
 from projects.models import Project
 from billing.plan_limits import get_plan_limits, can_add_monitor, get_effective_plan
-from billing.subscription_utils import create_customer_portal_session, sync_subscription_from_stripe
+from billing.subscription_utils import create_customer_portal_session, sync_subscription_from_polar
 from monitors.models import Monitor, MonitorCheck
 from incidents.models import Incident
 from notifications.models import Notification
@@ -500,7 +500,7 @@ def billing_success(request):
                 sub.status = 'active'
                 sub.save()
                 if subscription_id:
-                    sync_subscription_from_stripe(subscription_id)
+                    sync_subscription_from_polar(subscription_id)
                 messages.success(request, f"Поздравляем! Ваш тариф успешно обновлен до {plan.upper()}!")
         except Exception:
             pass

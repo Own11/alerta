@@ -8,7 +8,7 @@ from monitors.views import MonitorViewSet
 from incidents.views import IncidentViewSet
 from ai_assistant.views import AIChatSessionViewSet
 from notifications.views import NotificationViewSet
-from billing.views import CreateCheckoutSessionView, StripeWebhookView, CustomerPortalView
+from billing.views import CreateCheckoutSessionView, PolarWebhookView, CustomerPortalView
 
 # Настройка REST API Роутера
 router = routers.DefaultRouter()
@@ -31,7 +31,7 @@ urlpatterns = [
     # Billing API / Webhooks
     path('api/billing/create-checkout-session/', CreateCheckoutSessionView.as_view(), name='api_create_checkout'),
     path('api/billing/customer-portal/', CustomerPortalView.as_view(), name='api_customer_portal'),
-    path('api/billing/webhook/', StripeWebhookView.as_view(), name='stripe_webhook'),
+    path('api/billing/webhook/', PolarWebhookView.as_view(), name='polar_webhook'),
 
     # Веб-интерфейс (Django Templates)
     path('', include('web.urls')),
